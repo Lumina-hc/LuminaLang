@@ -57,6 +57,18 @@ fn main() i32 {
 
 本项目采用 MIT 开源协议，具体条款详见项目根目录下的 \`LICENSE\` 文件。MIT 协议允许自由使用、复制、修改、合并、发布、分发、再许可和销售本软件及其副本，使用时需保留原作者版权声明。
 
+## 贡献者
+
+- b站up主长庚hc（LuminaStudio创始人）
+
+- b站up主OmegeUOS
+
+- b站up主Backrooms程序员
+
+- b站up主ArchZero
+
+- b站up主bili\_17340148981
+
 ## 相关文件
 
 - \`interpreter\.py\`：LuminaLang完整解释器
