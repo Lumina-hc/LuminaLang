@@ -1,0 +1,38 @@
+fn add(a:i32,b:i32) i32{
+    let res:i32 = a + b
+    out res
+}
+
+fn sub(a:i32,b:i32) i32{
+    let res:i32 = a - b
+    out res
+}
+
+fn mul(a:i32,b:i32) i32{
+    let res:i32 = a * b
+    out res
+}
+
+fn div(a:i32,b:i32) i32{
+    let res:i32 = a / b
+    out res
+}
+
+fn mod(a:i32,b:i32) i32{
+    let res:i32 = a % b
+    out res
+}
+
+fn max(a:i32,b:i32) i32{
+    if a > b {
+        out a
+    }
+    out b
+}
+
+fn min(a:i32,b:i32) i32{
+    if a < b {
+        out a
+    }
+    out b
+}

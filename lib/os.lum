@@ -1,0 +1,27 @@
+fn exit(code:i32) i32 {
+    out os_exit(code)
+}
+
+fn sleep(sec:i32) i32 {
+    out os_sleep(sec)
+}
+
+fn getcwd() string {
+    out os_getcwd()
+}
+
+fn mkdir(name:string) i32 {
+    out os_mkdir(name)
+}
+
+fn listdir() string {
+    out os_listdir()
+}
+
+fn system(cmd:string) i32 {
+    out os_system(cmd)
+}
+
+fn remove(filename:string) i32 {
+    out os_remove(filename)
+}
