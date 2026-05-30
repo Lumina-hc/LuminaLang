@@ -1,0 +1,11 @@
+use time::year,month,day,hour,minute,second
+
+fn main() i32 {
+    out year()
+    out month()
+    out day()
+    out hour()
+    out minute()
+    out second()
+    back 0
+}

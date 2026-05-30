@@ -1,0 +1,9 @@
+use math::*
+
+fn main() i32 {
+    out abs(-100)
+    out sqrt(144)
+    out lcm(6, 8)
+    out mod(-7, 3)
+    back 0
+}

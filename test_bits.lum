@@ -1,0 +1,11 @@
+use bits::and,or,xor,shl,shr,popcount
+
+fn main() i32 {
+    out and(12, 10)
+    out or(12, 10)
+    out xor(12, 10)
+    out shl(1, 8)
+    out shr(256, 4)
+    out popcount(255)
+    back 0
+}

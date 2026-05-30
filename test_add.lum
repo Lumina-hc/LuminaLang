@@ -1,0 +1,9 @@
+fn add(a:i32, b:i32) i32 {
+    back a + b
+}
+
+fn main() i32 {
+    let res:i32 = add(3, 5)
+    out res
+    back 0
+}
