@@ -1,0 +1,16 @@
+use math::abs,min,max,pow,gcd,clamp,sign
+
+fn main() i32 {
+    out abs(-42)
+    out min(3, 7)
+    out max(3, 7)
+    out pow(2, 10)
+    out gcd(12, 8)
+    out clamp(50, 0, 100)
+    out clamp(150, 0, 100)
+    out clamp(-5, 0, 100)
+    out sign(-3)
+    out sign(0)
+    out sign(9)
+    back 0
+}

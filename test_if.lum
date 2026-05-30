@@ -1,0 +1,11 @@
+fn main() i32 {
+    let num:i32 = 15
+    if num > 10 {
+        out 100
+    } elif num == 10 {
+        out 10
+    } else {
+        out 1
+    }
+    back 0
+}

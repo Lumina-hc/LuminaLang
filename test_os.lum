@@ -1,0 +1,8 @@
+use os::pid,sep,is_windows
+
+fn main() i32 {
+    out pid()
+    out sep()
+    out is_windows()
+    back 0
+}
