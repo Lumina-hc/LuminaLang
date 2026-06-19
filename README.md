@@ -245,7 +245,6 @@ LuminaLang v0.8.0/
 │   └── runtime.go       树遍历解释器
 ├── stdlib/
 │   ├── stdlib.go        模块注册表
-│   ├── errors.go        共用错误工具
 │   ├── math.go          math 库
 │   ├── bits.go          bits 库
 │   ├── io.go            io 库
