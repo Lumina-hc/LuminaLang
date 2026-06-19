@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LuminaLang — 下载</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#fff;color:#1a1a2e;line-height:1.7}
+a{color:#4361ee;text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;height:64px;background:#fff;border-bottom:1px solid #e8e8ec;display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:100}
+.nav-logo{font-size:22px;font-weight:800;color:#1a1a2e;letter-spacing:-0.5px}
+.nav-logo span{color:#4361ee}
+.nav-links{display:flex;gap:28px;font-size:15px}
+.nav-links a{color:#555;font-weight:500}
+.nav-links a:hover{color:#4361ee;text-decoration:none}
+
+/* Hero */
+.hero{min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:140px 24px 60px}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:800;letter-spacing:-1px;color:#1a1a2e;margin-bottom:16px}
+.hero p{font-size:16px;color:#666;max-width:500px}
+
+/* Versions */
+.versions{max-width:720px;margin:0 auto;padding:0 48px 120px}
+.ver-card{background:#f8f8fa;border:1px solid #e8e8ec;border-radius:16px;padding:36px 40px;margin-bottom:28px;transition:box-shadow 0.25s,transform 0.25s}
+.ver-card:hover{box-shadow:0 8px 32px rgba(67,97,238,0.1);transform:translateY(-2px)}
+.ver-card.latest{border-color:#4361ee;background:#f0f4ff}
+.ver-card .badge{display:inline-block;background:#4361ee;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:14px;letter-spacing:0.3px}
+.ver-card .ver-title{font-size:28px;font-weight:800;color:#1a1a2e;margin-bottom:4px}
+.ver-card .ver-date{font-size:14px;color:#999;margin-bottom:20px}
+.ver-card .ver-desc{font-size:15px;color:#555;margin-bottom:20px;line-height:1.8}
+.ver-card .dl-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#4361ee;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.2s}
+.ver-card .dl-btn:hover{background:#3451d1;text-decoration:none}
+.ver-card .dl-link{display:inline-block;margin-left:16px;font-size:14px;color:#4361ee}
+
+/* Footer */
+footer{border-top:1px solid #e8e8ec;padding:40px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;color:#999;font-size:14px}
+footer a{color:#777}
+
+@media(max-width:640px){
+    nav{padding:0 20px}
+    .nav-links{gap:16px;font-size:13px}
+    .hero{padding:100px 20px 40px}
+    .versions{padding:0 20px 80px}
+    .ver-card{padding:24px 20px}
+    footer{padding:32px 20px;flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="nav-logo"><a href="index.html" style="color:inherit">Lumina<span>Lang</span></a></div>
+<div class="nav-links">
+    <a href="index.html">主页</a>
+    <a href="guide.html">指南</a>
+    <a href="download.html" style="color:#4361ee;font-weight:700">下载</a>
+    <a href="https://codeberg.org/LuminaStudio/LuminaLang-v0.8.0" target="_blank">Codeberg</a>
+</div>
+</nav>
+
+<div class="hero">
+    <h1>下载 LuminaLang</h1>
+    <p>获取最新版本，开始使用简洁强类型的 LuminaLang。</p>
+</div>
+
+<div class="versions">
+
+    <!-- v0.8.0 -->
+    <div class="ver-card latest">
+        <div class="badge">LATEST</div>
+        <div class="ver-title">v0.8.0</div>
+        <div class="ver-date">2026年6月 — LuminaStudio 发布</div>
+        <div class="ver-desc">
+            新增 halt / skip 关键字（跳出循环 / 跳过本次迭代），支持 // 单行注释和 /* */ 多行注释，标准库全面兼容。基于 Go 实现，单可执行文件，无运行时依赖。
+        </div>
+        <a class="dl-btn" href="https://codeberg.org/LuminaStudio/LuminaLang-v0.8.0/releases" target="_blank">前往 Codeberg 下载</a>
+    </div>
+
+    <!-- v0.7.0 -->
+    <div class="ver-card">
+        <div class="ver-title">v0.7.0</div>
+        <div class="ver-date">2026年5月 — LuminaStudio 发布</div>
+        <div class="ver-desc">
+            首个 Go 实现版本。强类型 i32 系统，let 变量声明，五大标准库（math / bits / io / time / os），use 语句导入，高性能树遍历解释器。
+        </div>
+        <a class="dl-btn" href="https://codeberg.org/LuminaStudio/LuminaLang-v0.7.0/releases" target="_blank">前往 Codeberg 下载</a>
+    </div>
+
+    <!-- v0.6.0 -->
+    <div class="ver-card">
+        <div class="ver-title">v0.6.0</div>
+        <div class="ver-date">2026年5月 — LuminaStudio 发布</div>
+        <div class="ver-desc">
+            模块化重构版本（Python）。支持 use 导入、try / except / finally 异常处理、字符串类型、布尔类型（true / false）、and / or 逻辑运算。配套 math 和 os 标准库。
+        </div>
+        <a class="dl-link" href="https://codeberg.org/LuminaStudio/LuminaLang-v0.6.0" target="_blank">Codeberg 仓库 &rarr;</a>
+    </div>
+
+    <!-- v0.5.0 -->
+    <div class="ver-card">
+        <div class="ver-title">v0.5.0</div>
+        <div class="ver-date">2026年5月 — LuminaStudio 发布</div>
+        <div class="ver-desc">
+            首个公开版本（Python 单文件解释器）。支持 i32 强类型、let 变量、if / elif / else 分支、while 循环、函数递归、out / input() 输入输出。无注释支持，无标准库。
+        </div>
+        <a class="dl-link" href="https://codeberg.org/LuminaStudio/LuminaLang-v0.5.0" target="_blank">Codeberg 仓库 &rarr;</a>
+    </div>
+
+</div>
+
+<footer>
+    <span>&copy; 2026 LuminaStudio. 保留所有权利。</span>
+    <a href="https://codeberg.org/LuminaStudio/LuminaLang-v0.8.0" target="_blank">Codeberg 仓库 &rarr;</a>
+</footer>
+
+</body>
+</html>

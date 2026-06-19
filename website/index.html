@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LuminaLang — 简洁强类型编程语言</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#fff;color:#1a1a2e;line-height:1.7}
+a{color:#4361ee;text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;height:64px;background:#fff;border-bottom:1px solid #e8e8ec;display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:100}
+.nav-logo{font-size:22px;font-weight:800;color:#1a1a2e;letter-spacing:-0.5px}
+.nav-logo span{color:#4361ee}
+.nav-links{display:flex;gap:28px;font-size:15px}
+.nav-links a{color:#555;font-weight:500}
+.nav-links a:hover{color:#4361ee;text-decoration:none}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px}
+.hero h1{font-size:clamp(40px,7vw,80px);font-weight:800;letter-spacing:-1.5px;color:#1a1a2e;margin-bottom:20px}
+.hero h1 span{color:#4361ee}
+.hero p{font-size:18px;color:#666;max-width:540px;margin-bottom:44px}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:#4361ee;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.2s,transform 0.15s}
+.btn-primary:hover{background:#3451d1;text-decoration:none;transform:translateY(-1px)}
+.btn-secondary{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:#fff;color:#333;border:1.5px solid #ddd;border-radius:10px;font-size:16px;font-weight:500;cursor:pointer;transition:border-color 0.2s}
+.btn-secondary:hover{border-color:#4361ee;color:#4361ee;text-decoration:none}
+
+/* Code demo */
+.code-demo{background:#f8f8fa;border:1px solid #e8e8ec;border-radius:14px;padding:28px 32px;max-width:680px;width:100%;margin-top:56px;text-align:left;overflow-x:auto}
+.code-demo .file-bar{display:flex;align-items:center;gap:8px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #eee}
+.code-demo .dots{display:flex;gap:6px}
+.code-demo .dots span{width:10px;height:10px;border-radius:50%}
+.code-demo .dots .r{background:#ff5f57}
+.code-demo .dots .y{background:#febc2e}
+.code-demo .dots .g{background:#28c840}
+.code-demo .fname{font-size:12.5px;color:#999}
+pre{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:13.5px;line-height:1.85;color:#1a1a2e;white-space:pre}
+.kw{color:#7c3aed;font-weight:600}
+.fn{color:#2563eb}
+.num{color:#d97706}
+.cm{color:#999;font-style:italic}
+
+/* Sections */
+section{padding:100px 48px;max-width:1100px;margin:0 auto}
+.section-title{font-size:34px;font-weight:800;letter-spacing:-0.5px;color:#1a1a2e;margin-bottom:12px}
+.section-sub{font-size:16px;color:#666;margin-bottom:52px;max-width:540px}
+
+/* Feature grid */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.feature-card{background:#f8f8fa;border:1px solid #e8e8ec;border-radius:14px;padding:32px 28px;transition:box-shadow 0.25s,transform 0.25s}
+.feature-card:hover{box-shadow:0 8px 32px rgba(67,97,238,0.1);transform:translateY(-3px)}
+.feature-icon{font-size:26px;margin-bottom:16px;color:#4361ee}
+.feature-card h3{font-size:17px;font-weight:700;color:#1a1a2e;margin-bottom:10px}
+.feature-card p{font-size:14.5px;color:#666;line-height:1.75}
+
+/* Guide link */
+.guide-link{display:inline-flex;align-items:center;gap:8px;margin-top:40px;padding:14px 32px;background:#f0f2ff;border:1px solid #dbeafe;border-radius:10px;color:#4361ee;font-weight:600;font-size:15px;transition:background 0.2s}
+.guide-link:hover{background:#e0e7ff;text-decoration:none}
+
+/* Footer */
+footer{border-top:1px solid #e8e8ec;padding:40px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;color:#999;font-size:14px}
+footer a{color:#777}
+
+@media(max-width:640px){
+    nav{padding:0 20px}
+    .nav-links{gap:16px;font-size:13px}
+    section{padding:72px 20px}
+    .hero h1{font-size:36px}
+    footer{padding:32px 20px;flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="nav-logo"><a href="index.html" style="color:inherit">Lumina<span>Lang</span></a></div>
+<div class="nav-links">
+    <a href="index.html" style="color:#4361ee;font-weight:700">主页</a>
+    <a href="guide.html">指南</a>
+    <a href="download.html">下载</a>
+    <a href="https://codeberg.org/LuminaStudio/LuminaLang-v0.8.0" target="_blank">Codeberg</a>
+</div>
+</nav>
+
+<div class="hero">
+    <h1>简洁强类型<br><span>解释型编程语言</span></h1>
+    <p>LuminaLang 由 LuminaStudio 打造，语法简洁直观，内置丰富标准库，基于 Go 实现的高性能解释器。</p>
+    <div class="hero-btns">
+        <a class="btn-primary" href="download.html">下载 v0.8.0</a>
+        <a class="btn-secondary" href="guide.html">语法指南</a>
+    </div>
+
+    <div class="code-demo">
+        <div class="file-bar">
+            <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+            &nbsp;<span class="fname">demo.lum</span>
+        </div>
+<pre><span class="kw">fn</span> <span class="fn">factorial</span>(n: <span class="kw">i32</span>) <span class="kw">i32</span> {
+    <span class="kw">if</span> n <span class="op">==</span> <span class="num">1</span> {
+        <span class="kw">back</span> <span class="num">1</span>
+    }
+    <span class="kw">back</span> n <span class="op">*</span> <span class="fn">factorial</span>(n <span class="op">-</span> <span class="num">1</span>)
+}
+
+<span class="kw">fn</span> <span class="fn">main</span>() <span class="kw">i32</span> {
+    <span class="kw">let</span> r: <span class="kw">i32</span> <span class="op">=</span> <span class="fn">factorial</span>(<span class="num">5</span>)
+    <span class="kw">out</span> r
+    <span class="kw">back</span> <span class="num">0</span>
+}
+</pre>
+    </div>
+</div>
+
+<section>
+    <div class="section-title">核心特性</div>
+    <div class="section-sub">设计简洁，功能齐全</div>
+    <div class="features-grid">
+        <div class="feature-card"><div class="feature-icon">&gt;</div><h3>强类型系统</h3><p>仅支持 i32 类型，类型声明清晰，编译期即可发现类型错误，安全可靠。</p></div>
+        <div class="feature-card"><div class="feature-icon">&loz;</div><h3>函数与递归</h3><p>支持函数定义、参数传递与递归调用，使用 back 语句返回函数值。</p></div>
+        <div class="feature-card"><div class="feature-icon">&loz;</div><h3>分支与循环</h3><p>if / elif / else 分支结构，while 循环，halt 跳出，skip 跳过本次。</p></div>
+        <div class="feature-card"><div class="feature-icon">&raquo;</div><h3>标准库导入</h3><p>使用 use 语法导入标准库，支持精确导入和通配符导入。</p></div>
+        <div class="feature-card"><div class="feature-icon">&cir;</div><h3>输入输出</h3><p>out 语句输出，input() 读取输入，配套 io 库提供丰富的 I/O 功能。</p></div>
+        <div class="feature-card"><div class="feature-icon">&loz;</div><h3>高性能解释器</h3><p>基于 Go 语言实现，树遍历解释执行，速度快，单个可执行文件，无运行时依赖。</p></div>
+    </div>
+    <a class="guide-link" href="guide.html">阅读完整语法指南 &rarr;</a>
+</section>
+
+<footer>
+    <span>&copy; 2026 LuminaStudio. 保留所有权利。</span>
+    <a href="https://codeberg.org/LuminaStudio/LuminaLang-v0.8.0" target="_blank">Codeberg 仓库 &rarr;</a>
+</footer>
+
+</body>
+</html>
