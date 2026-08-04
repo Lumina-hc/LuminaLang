@@ -1,0 +1,7 @@
+fn main() i32 {
+    out "=== for...in 遍历 ==="
+    for ch in "hello" {
+        out ch
+    }
+    back 0
+}

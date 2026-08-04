@@ -1,0 +1,16 @@
+fn is_positive(n: i32) bool {
+    back n > 0
+}
+
+fn main() i32 {
+    out "=== bool 作为返回类型 ==="
+    if is_positive(5) {
+        out "5 is positive"
+    }
+    if is_positive(-3) {
+        out "should not print"
+    } else {
+        out "-3 is not positive"
+    }
+    back 0
+}

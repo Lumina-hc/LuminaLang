@@ -1,0 +1,8 @@
+use io::readline
+
+fn main() i32 {
+    out "=== readline 测试（需手动输入）==="
+    out "请输入一行文字:"
+    out readline()
+    back 0
+}

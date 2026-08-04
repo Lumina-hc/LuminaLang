@@ -1,0 +1,11 @@
+use os::getenv
+use os::cwd
+
+fn main() i32 {
+    out "=== os::getenv / cwd ==="
+    let path: string = getenv("PATH")
+    out path
+    let dir: string = cwd()
+    out dir
+    back 0
+}

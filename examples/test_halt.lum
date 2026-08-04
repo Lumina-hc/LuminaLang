@@ -1,0 +1,12 @@
+fn main() i32 {
+    out "=== halt 测试 ==="
+    let i: i32 = 0
+    while i < 100 {
+        i = i + 1
+        if i == 5 {
+            halt
+        }
+    }
+    out "should not reach here"
+    back 0
+}

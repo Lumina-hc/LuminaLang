@@ -1,0 +1,12 @@
+fn main() i32 {
+    out "=== skip 测试 ==="
+    let i: i32 = 0
+    while i < 5 {
+        i = i + 1
+        if i == 3 {
+            skip
+        }
+        out i
+    }
+    back 0
+}

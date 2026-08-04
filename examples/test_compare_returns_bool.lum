@@ -1,0 +1,9 @@
+fn main() i32 {
+    out "=== 比较运算返回 bool ==="
+    out 3 > 5
+    out 3 < 5
+    out 10 == 10
+    out "abc" == "abc"
+    out "abc" != "def"
+    back 0
+}

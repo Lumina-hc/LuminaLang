@@ -3,51 +3,51 @@ package ast
 import "luminalang/token"
 
 type Expr interface {
-    ExprNode()
+	ExprNode()
 }
 
 type IntLiteral struct {
-    Value int64
+	Value int64
 }
 
 func (IntLiteral) ExprNode() {}
 
 type StringLiteral struct {
-    Value string
+	Value string
 }
 
 func (StringLiteral) ExprNode() {}
 
 type BoolLiteral struct {
-    Value bool
+	Value bool
 }
 
 func (BoolLiteral) ExprNode() {}
 
 type Ident struct {
-    Name string
+	Name string
 }
 
 func (Ident) ExprNode() {}
 
 type BinaryExpr struct {
-    Left  Expr
-    Op    token.TokenType
-    Right Expr
+	Left  Expr
+	Op    token.TokenType
+	Right Expr
 }
 
 func (BinaryExpr) ExprNode() {}
 
 type UnaryExpr struct {
-    Op    token.TokenType
-    Right Expr
+	Op    token.TokenType
+	Right Expr
 }
 
 func (UnaryExpr) ExprNode() {}
 
 type CallExpr struct {
-    Callee string
-    Args   []Expr
+	Callee string
+	Args   []Expr
 }
 
 func (CallExpr) ExprNode() {}
@@ -57,31 +57,31 @@ type InputExpr struct{}
 func (InputExpr) ExprNode() {}
 
 type Stmt interface {
-    StmtNode()
+	StmtNode()
 }
 
 type LetStmt struct {
-    Name string
-    Init Expr
+	Name string
+	Init Expr
 }
 
 func (LetStmt) StmtNode() {}
 
 type AssignStmt struct {
-    Name string
-    Expr Expr
+	Name string
+	Expr Expr
 }
 
 func (AssignStmt) StmtNode() {}
 
 type OutStmt struct {
-    Expr Expr
+	Expr Expr
 }
 
 func (OutStmt) StmtNode() {}
 
 type BackStmt struct {
-    Expr Expr
+	Expr Expr
 }
 
 func (BackStmt) StmtNode() {}
@@ -95,63 +95,63 @@ type SkipStmt struct{}
 func (SkipStmt) StmtNode() {}
 
 type IfStmt struct {
-    Cond       Expr
-    Then       []Stmt
-    ElifConds  []Expr
-    ElifBodies [][]Stmt
-    ElseBody   []Stmt
+	Cond       Expr
+	Then       []Stmt
+	ElifConds  []Expr
+	ElifBodies [][]Stmt
+	ElseBody   []Stmt
 }
 
 func (IfStmt) StmtNode() {}
 
 type WhileStmt struct {
-    Cond Expr
-    Body []Stmt
+	Cond Expr
+	Body []Stmt
 }
 
 func (WhileStmt) StmtNode() {}
 
 type ForInStmt struct {
-    VarName  string
-    IterExpr Expr
-    Body     []Stmt
+	VarName  string
+	IterExpr Expr
+	Body     []Stmt
 }
 
 func (ForInStmt) StmtNode() {}
 
 type ExprStmt struct {
-    Expr Expr
+	Expr Expr
 }
 
 func (ExprStmt) StmtNode() {}
 
 type Decl interface {
-    DeclNode()
+	DeclNode()
 }
 
 type FnDecl struct {
-    Name    string
-    Params  []Param
-    RetType string
-    Body    []Stmt
+	Name    string
+	Params  []Param
+	RetType string
+	Body    []Stmt
 }
 
 func (FnDecl) DeclNode() {}
 
 type Param struct {
-    Name string
-    Type string
+	Name string
+	Type string
 }
 
 type UseDecl struct {
-    Module   string
-    Items    []string
-    Wildcard bool
+	Module   string
+	Items    []string
+	Wildcard bool
 }
 
 func (UseDecl) DeclNode() {}
 
 type Program struct {
-    Imports   []UseDecl
-    Functions []FnDecl
+	Imports   []UseDecl
+	Functions []FnDecl
 }

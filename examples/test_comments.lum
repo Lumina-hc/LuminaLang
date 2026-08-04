@@ -1,0 +1,6 @@
+fn main() i32 {
+    out "=== 注释语法 ==="
+    let x: i32 = 42
+    out x
+    back 0
+}
