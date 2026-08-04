@@ -15,7 +15,7 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) < 1 {
-		fmt.Println("LuminaLang v0.8.0 (native compiler)")
+		fmt.Println("LuminaLang v0.9.0 (native compiler)")
 		fmt.Println("Usage: luminalang <file.lum> [-o output]")
 		os.Exit(1)
 	}

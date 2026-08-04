@@ -1,4 +1,4 @@
-# LuminaLang v0.8.0
+# LuminaLang v0.9.0
 
 A strongly-typed compiled language written in Go. LuminaLang source (`.lum`)
 is transpiled to Go and then built into a native executable, giving you
@@ -211,7 +211,7 @@ Import individual functions with `use <module>::<function>`.
 ## Project structure
 
 ```
-LuminaLang-v0.8.0/
+LuminaLang-v0.9.0/
 ├── main.go              CLI entry point
 ├── go.mod
 ├── token/               Token definitions
