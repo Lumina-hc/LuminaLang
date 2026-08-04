@@ -225,7 +225,6 @@ LuminaLang-v0.8.0/
 │   ├── infer.go         Type inference
 │   └── runtime.go       Embedded Go standard library source
 ├── examples/            Example programs and test cases
-├── website/             Project website (HTML/CSS)
 ├── LICENSE              Apache License 2.0
 └── README.md
 ```
