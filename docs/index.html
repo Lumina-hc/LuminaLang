@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuminaLang</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.6;
+        }
+        nav {
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        nav .logo { font-size: 1.25rem; font-weight: 700; color: #111; text-decoration: none; }
+        nav .logo span { color: #0066cc; }
+        nav .right { display: flex; align-items: center; }
+        nav a { color: #555; text-decoration: none; margin-left: 1.5rem; font-size: 0.9rem; }
+        nav a:hover { color: #0066cc; }
+        .lang-btn {
+            background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;
+            padding: 0.3rem 0.75rem; font-size: 0.85rem; cursor: pointer;
+            color: #555; margin-left: 1.5rem; transition: all 0.2s;
+        }
+        .lang-btn:hover { border-color: #0066cc; color: #0066cc; }
+        .hero {
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            background: linear-gradient(180deg, #fff 0%, #f5f7fa 100%);
+        }
+        .hero h1 { font-size: 3rem; font-weight: 700; color: #111; margin-bottom: 1rem; }
+        .hero h1 span { color: #0066cc; }
+        .hero p { font-size: 1.15rem; color: #666; max-width: 600px; margin: 0 auto 2rem; }
+        .btn {
+            display: inline-block; padding: 0.75rem 2rem; border-radius: 6px;
+            text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;
+        }
+        .btn-primary { background: #0066cc; color: #fff; }
+        .btn-primary:hover { background: #0052a3; }
+        .btn-outline { border: 1px solid #ddd; color: #555; margin-left: 0.75rem; }
+        .btn-outline:hover { border-color: #0066cc; color: #0066cc; }
+        .section { max-width: 900px; margin: 0 auto; padding: 4rem 2rem; }
+        .section h2 { font-size: 1.75rem; font-weight: 700; color: #111; margin-bottom: 1.5rem; }
+        .features {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;
+        }
+        .feature { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 1.5rem; }
+        .feature h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: #111; }
+        .feature p { font-size: 0.9rem; color: #666; }
+        .cmd-table {
+            width: 100%; border-collapse: collapse; background: #fff;
+            border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; margin-top: 1rem;
+        }
+        .cmd-table th, .cmd-table td {
+            padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #e5e5e5; font-size: 0.9rem;
+        }
+        .cmd-table th { background: #f8f8f8; font-weight: 600; color: #111; }
+        .cmd-table code {
+            background: #f0f0f0; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.85rem;
+        }
+        .install-steps {
+            background: #fff; border: 1px solid #e5e5e5; border-radius: 8px;
+            padding: 1.5rem 2rem; margin-top: 1rem;
+        }
+        .install-steps li { margin-bottom: 0.5rem; font-size: 0.95rem; color: #444; }
+        .install-steps code {
+            background: #f0f0f0; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.85rem;
+        }
+        footer {
+            text-align: center; padding: 2rem; border-top: 1px solid #e5e5e5; color: #999; font-size: 0.85rem;
+        }
+        footer a { color: #0066cc; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a class="logo" href="#">Lumina<span>Lang</span></a>
+        <div class="right">
+            <a href="#features" data-en="Features" data-zh="特性">Features</a>
+            <a href="#stdlib" data-en="Stdlib" data-zh="标准库">Stdlib</a>
+            <a href="#build" data-en="Build" data-zh="构建">Build</a>
+            <a href="https://github.com/Lumina-hc/LuminaLang">GitHub</a>
+            <button class="lang-btn" onclick="toggleLang()">EN / 中文</button>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Lumina<span>Lang</span></h1>
+        <p data-en="A strongly-typed compiled language. Write .lum source, transpile to Go, build to a native executable." data-zh="强类型编译语言。编写 .lum 源码，转译为 Go，构建为原生可执行文件。">A strongly-typed compiled language. Write .lum source, transpile to Go, build to a native executable.</p>
+        <a href="https://github.com/Lumina-hc/LuminaLang" class="btn btn-primary" data-en="View on GitHub" data-zh="GitHub 查看">View on GitHub</a>
+        <a href="#build" class="btn btn-outline" data-en="Get Started" data-zh="快速开始">Get Started</a>
+    </div>
+
+    <div class="section" id="features">
+        <h2 data-en="Features" data-zh="特性">Features</h2>
+        <div class="features">
+            <div class="feature">
+                <h3 data-en="Strong Typing" data-zh="强类型">Strong Typing</h3>
+                <p data-en="Three core types: i32, bool, string. Static type checking at compile time." data-zh="三种核心类型：i32、bool、string。编译时静态类型检查。">Three core types: i32, bool, string. Static type checking at compile time.</p>
+            </div>
+            <div class="feature">
+                <h3 data-en="Control Flow" data-zh="控制流">Control Flow</h3>
+                <p data-en="if / elif / else, while, for ... in, halt, skip." data-zh="if / elif / else、while、for ... in、halt、skip。">if / elif / else, while, for ... in, halt, skip.</p>
+            </div>
+            <div class="feature">
+                <h3 data-en="Functions" data-zh="函数">Functions</h3>
+                <p data-en="Parameters, return values, and recursion. Clean, readable syntax." data-zh="参数、返回值和递归。简洁可读的语法。">Parameters, return values, and recursion. Clean, readable syntax.</p>
+            </div>
+            <div class="feature">
+                <h3 data-en="Native Output" data-zh="原生输出">Native Output</h3>
+                <p data-en="Compiles to a single native executable with zero runtime dependencies." data-zh="编译为单个原生可执行文件，零运行时依赖。">Compiles to a single native executable with zero runtime dependencies.</p>
+            </div>
+            <div class="feature">
+                <h3 data-en="Standard Library" data-zh="标准库">Standard Library</h3>
+                <p data-en="Math, bits, I/O, time, and OS modules with use imports." data-zh="数学、位运算、I/O、时间和操作系统模块，支持 use 导入。">Math, bits, I/O, time, and OS modules with use imports.</p>
+            </div>
+            <div class="feature">
+                <h3 data-en="Go Backend" data-zh="Go 后端">Go Backend</h3>
+                <p data-en="Transpiles to Go, leveraging Go's fast compilation and cross-platform support." data-zh="转译为 Go，利用 Go 的快速编译和跨平台支持。">Transpiles to Go, leveraging Go's fast compilation and cross-platform support.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 data-en="Syntax Overview" data-zh="语法概览">Syntax Overview</h2>
+        <div class="install-steps">
+            <ol>
+                <li data-en="Output:" data-zh="输出：">Output: <code>out "Hello, World!"</code></li>
+                <li data-en="Variables:" data-zh="变量：">Variables: <code>let name: i32 = 42</code></li>
+                <li data-en="Conditionals:" data-zh="条件：">Conditionals: <code>if score >= 90 { ... } elif ... { ... } else { ... }</code></li>
+                <li data-en="Loops:" data-zh="循环：">Loops: <code>while i < 5 { ... }</code> &nbsp; <code>for ch in "hello" { ... }</code></li>
+                <li data-en="Functions:" data-zh="函数：">Functions: <code>fn add(a: i32, b: i32) i32 { back a + b }</code></li>
+                <li data-en="Imports:" data-zh="导入：">Imports: <code>use io::readline</code></li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section" id="stdlib">
+        <h2 data-en="Standard Library" data-zh="标准库">Standard Library</h2>
+        <table class="cmd-table">
+            <thead>
+                <tr>
+                    <th data-en="Module" data-zh="模块">Module</th>
+                    <th data-en="Functions" data-zh="函数">Functions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><code>math</code></td><td>abs, max, min, pow, sqrt, gcd, lcm, mod, clamp, sign</td></tr>
+                <tr><td><code>bits</code></td><td>and, or, xor, not, shl, shr, bit, setbit, clrbit, popcount</td></tr>
+                <tr><td><code>io</code></td><td>print, println, eprint, eprintln, readint, readline, flush</td></tr>
+                <tr><td><code>time</code></td><td>now, year, month, day, hour, minute, second, weekday, sleep_ms</td></tr>
+                <tr><td><code>os</code></td><td>exit, pid, ppid, args_count, sep, is_windows, getenv, cwd</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section" id="build">
+        <h2 data-en="Quick Start" data-zh="快速开始">Quick Start</h2>
+        <div class="install-steps">
+            <ol>
+                <li data-en="Install Go 1.21 or later." data-zh="安装 Go 1.21 或更高版本。">Install Go 1.21 or later.</li>
+                <li data-en="Clone the repository:" data-zh="克隆仓库：">Clone the repository: <code>git clone https://github.com/Lumina-hc/LuminaLang.git</code></li>
+                <li data-en="Build the compiler:" data-zh="构建编译器：">Build the compiler: <code>go build -o luminalang.exe .</code></li>
+                <li data-en="Compile a program:" data-zh="编译程序：">Compile a program: <code>luminalang examples/test_bool_literals.lum</code></li>
+                <li data-en="Run it:" data-zh="运行：">Run it: <code>.\test_bool_literals.exe</code></li>
+            </ol>
+        </div>
+    </div>
+
+    <footer>
+        <p>LuminaLang &copy; 2026 | <a href="https://github.com/Lumina-hc">Lumina-hc</a> | <a href="https://github.com/Lumina-hc/LuminaLang/blob/main/LICENSE">Apache-2.0</a></p>
+    </footer>
+
+    <script>
+        let lang = 'en';
+        function toggleLang() {
+            lang = lang === 'en' ? 'zh' : 'en';
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.textContent = el.getAttribute('data-' + lang);
+            });
+        }
+    </script>
+</body>
+</html>
