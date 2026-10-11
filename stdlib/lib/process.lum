@@ -1,0 +1,39 @@
+use sys::system as _system
+use sys::exit as _exit
+use sys::args_count as _args_count
+use sys::arg as _arg
+use sys::getenv as _getenv
+
+fn system(cmd: string) i32 {
+    back _system(cmd)
+}
+
+fn exit(code: i32) i32 {
+    back _exit(code)
+}
+
+fn args_count() i32 {
+    back _args_count()
+}
+
+fn arg(i: i32) string {
+    back _arg(i)
+}
+
+fn getenv(name: string) string {
+    back _getenv(name)
+}
+
+fn args() string {
+    let n: i32 = _args_count()
+    let s: string = ""
+    let i: i32 = 0
+    while i < n {
+        if i > 0 {
+            s = s + " "
+        }
+        s = s + _arg(i)
+        i = i + 1
+    }
+    back s
+}

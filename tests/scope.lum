@@ -1,0 +1,16 @@
+fn main() i32 {
+    let x: i32 = 1
+    out x
+    if true {
+        let x: i32 = 2
+        out x
+    }
+    out x
+    let i: i32 = 0
+    while i < 2 {
+        let y: i32 = i * 10
+        out y
+        i = i + 1
+    }
+    back 0
+}

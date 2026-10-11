@@ -1,0 +1,49 @@
+fn sum(a: []i32) i32 {
+	let total: i32 = 0
+	let n: i32 = len(a)
+	while n > 0 {
+		n = n - 1
+		total = total + a[n]
+	}
+	back total
+}
+
+fn main() i32 {
+	let nums: []i32 = [1, 2, 3]
+	out len(nums)
+	out nums[0] + nums[1] * nums[2]
+
+	nums[1] = 9
+	out nums[1]
+
+	nums = push(nums, 7)
+	out len(nums)
+	out nums[len(nums) - 1]
+
+	nums = append(nums, 8)
+	out nums[len(nums) - 1]
+
+	out sum(nums)
+
+	let floats: []f64 = [1.5, 2.25]
+	floats[1] = 3.75
+	out floats[0] + floats[1]
+
+	let flags: []bool = [true, false]
+	flags[0] = false
+	out not flags[0]
+	out flags[1]
+	flags = push(flags, true)
+	out len(flags)
+	out flags[len(flags) - 1]
+
+	let words: []string = ["one", "two"]
+	words[0] = "ONE"
+	out words[0]
+	out words[1]
+	out len(words[1])
+
+	let empty: []f64 = []
+	out len(empty)
+	back 0
+}

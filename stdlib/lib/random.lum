@@ -1,0 +1,15 @@
+use sys::rand_seed as _seed
+use sys::rand_int as _int
+use sys::rand_f64 as _f64
+
+fn seed(s: i32) i32 {
+    back _seed(s)
+}
+
+fn int(lo: i32, hi: i32) i32 {
+    back _int(lo, hi)
+}
+
+fn float() f64 {
+    back _f64()
+}

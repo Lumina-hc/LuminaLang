@@ -1,0 +1,35 @@
+use sys::newline as _newline
+use sys::flush as _flush
+use sys::write as _write
+use sys::readline as _readline
+use sys::readint as _readint
+use sys::readchar as _readchar
+use sys::readall as _readall
+
+fn newline() i32 {
+    back _newline()
+}
+
+fn flush() i32 {
+    back _flush()
+}
+
+fn write(s: string) i32 {
+    back _write(s)
+}
+
+fn readline() string {
+    back _readline()
+}
+
+fn readint() i32 {
+    back _readint()
+}
+
+fn readchar() string {
+    back _readchar()
+}
+
+fn readall() string {
+    back _readall()
+}

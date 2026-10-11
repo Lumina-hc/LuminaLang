@@ -1,0 +1,75 @@
+use sys::getenv as _getenv
+use sys::setenv as _setenv
+use sys::cwd as _cwd
+use sys::chdir as _chdir
+use sys::pid as _pid
+use sys::ppid as _ppid
+use sys::args_count as _args_count
+use sys::arg as _arg
+use sys::exit as _exit
+use sys::sep as _sep
+use sys::is_windows as _is_windows
+use sys::hostname as _hostname
+use sys::temp_dir as _temp_dir
+use sys::username as _username
+use sys::arch as _arch
+
+fn getenv(name: string) string {
+    back _getenv(name)
+}
+
+fn setenv(name: string, value: string) i32 {
+    back _setenv(name, value)
+}
+
+fn cwd() string {
+    back _cwd()
+}
+
+fn chdir(path: string) i32 {
+    back _chdir(path)
+}
+
+fn pid() i32 {
+    back _pid()
+}
+
+fn ppid() i32 {
+    back _ppid()
+}
+
+fn args_count() i32 {
+    back _args_count()
+}
+
+fn arg(i: i32) string {
+    back _arg(i)
+}
+
+fn exit(code: i32) i32 {
+    back _exit(code)
+}
+
+fn sep() i32 {
+    back _sep()
+}
+
+fn is_windows() bool {
+    back _is_windows()
+}
+
+fn hostname() string {
+    back _hostname()
+}
+
+fn temp_dir() string {
+    back _temp_dir()
+}
+
+fn username() string {
+    back _username()
+}
+
+fn arch() i32 {
+    back _arch()
+}

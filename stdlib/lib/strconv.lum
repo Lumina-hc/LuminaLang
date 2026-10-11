@@ -1,0 +1,121 @@
+use sys::ord as _ord
+use sys::chr as _chr
+
+fn itoa(n: i32) string {
+    if n == 0 {
+        back "0"
+    }
+    let neg: bool = n < 0
+    let m: i32 = n
+    if neg {
+        m = 0 - m
+    }
+    let r: string = ""
+    while m > 0 {
+        let d: i32 = m % 10
+        r = _chr(48 + d) + r
+        m = m / 10
+    }
+    if neg {
+        r = "-" + r
+    }
+    back r
+}
+
+fn atoi(s: string) i32 {
+    let v: i32 = 0
+    let neg: bool = false
+    let first: bool = true
+    for c in s {
+        let o: i32 = _ord(c)
+        if first {
+            first = false
+            if o == 45 {
+                neg = true
+                skip
+            }
+            if o == 43 {
+                skip
+            }
+        }
+        if o >= 48 and o <= 57 {
+            v = v * 10 + (o - 48)
+        } else {
+            halt
+        }
+    }
+    if neg {
+        back 0 - v
+    }
+    back v
+}
+
+fn hexdigit(d: i32) string {
+    if d < 10 {
+        back _chr(48 + d)
+    }
+    back _chr(87 + d)
+}
+
+fn hex(n: i32) string {
+    if n < 0 {
+        let r: string = ""
+        let m: i32 = n
+        let i: i32 = 0
+        while i < 16 {
+            r = hexdigit(m & 15) + r
+            m = m >> 4
+            i = i + 1
+        }
+        back "0x" + r
+    }
+    if n == 0 {
+        back "0x0"
+    }
+    let r: string = ""
+    let m: i32 = n
+    while m > 0 {
+        r = hexdigit(m & 15) + r
+        m = m >> 4
+    }
+    back "0x" + r
+}
+
+fn bin(n: i32) string {
+    if n < 0 {
+        let r: string = ""
+        let m: i32 = n
+        let i: i32 = 0
+        while i < 64 {
+            if (m & 1) == 1 {
+                r = "1" + r
+            } else {
+                r = "0" + r
+            }
+            m = m >> 1
+            i = i + 1
+        }
+        back r
+    }
+    if n == 0 {
+        back "0"
+    }
+    let r: string = ""
+    let m: i32 = n
+    while m > 0 {
+        if (m & 1) == 1 {
+            r = "1" + r
+        } else {
+            r = "0" + r
+        }
+        m = m >> 1
+    }
+    back r
+}
+
+fn boolstr(n: i32) string {
+    if n != 0 {
+        back "true"
+    }
+    back "false"
+}

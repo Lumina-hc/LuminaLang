@@ -1,0 +1,41 @@
+fn bit(a: i32, b: i32) i32 {
+    if b < 0 or b >= 64 {
+        back 0
+    }
+    back (a >> b) & 1
+}
+
+fn setbit(a: i32, b: i32) i32 {
+    if b < 0 or b >= 64 {
+        back a
+    }
+    back a | (1 << b)
+}
+
+fn clrbit(a: i32, b: i32) i32 {
+    if b < 0 or b >= 64 {
+        back a
+    }
+    back a & ~(1 << b)
+}
+
+fn toggle(a: i32, b: i32) i32 {
+    if b < 0 or b >= 64 {
+        back a
+    }
+    back a ^ (1 << b)
+}
+
+fn popcount(n: i32) i32 {
+    let v: i32 = n
+    let c: i32 = 0
+    while v != 0 {
+        v = v & (v - 1)
+        c = c + 1
+    }
+    back c
+}
+
+fn parity(n: i32) i32 {
+    back popcount(n) & 1
+}

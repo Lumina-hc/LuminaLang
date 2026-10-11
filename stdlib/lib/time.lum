@@ -1,0 +1,55 @@
+use sys::now as _now
+use sys::now_ms as _now_ms
+use sys::year as _year
+use sys::month as _month
+use sys::day as _day
+use sys::hour as _hour
+use sys::minute as _minute
+use sys::second as _second
+use sys::weekday as _weekday
+use sys::yearday as _yearday
+use sys::sleep_ms as _sleep_ms
+
+fn now() i32 {
+    back _now()
+}
+
+fn now_ms() i32 {
+    back _now_ms()
+}
+
+fn year() i32 {
+    back _year()
+}
+
+fn month() i32 {
+    back _month()
+}
+
+fn day() i32 {
+    back _day()
+}
+
+fn hour() i32 {
+    back _hour()
+}
+
+fn minute() i32 {
+    back _minute()
+}
+
+fn second() i32 {
+    back _second()
+}
+
+fn weekday() i32 {
+    back _weekday()
+}
+
+fn yearday() i32 {
+    back _yearday()
+}
+
+fn sleep_ms(ms: i32) i32 {
+    back _sleep_ms(ms)
+}

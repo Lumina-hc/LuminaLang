@@ -1,0 +1,30 @@
+use sys::msgbox as _msgbox
+use sys::beep as _beep
+use sys::tick_ms as _tick_ms
+use sys::console_title as _console_title
+use sys::last_error as _last_error
+use sys::win_sleep_ms as _sleep_ms
+
+fn msgbox(title: string, text: string) i32 {
+    back _msgbox(title, text)
+}
+
+fn beep(freq: i32, dur_ms: i32) i32 {
+    back _beep(freq, dur_ms)
+}
+
+fn tick_ms() i32 {
+    back _tick_ms()
+}
+
+fn console_title(title: string) i32 {
+    back _console_title(title)
+}
+
+fn last_error() i32 {
+    back _last_error()
+}
+
+fn sleep_ms(ms: i32) i32 {
+    back _sleep_ms(ms)
+}

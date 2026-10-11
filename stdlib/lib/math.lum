@@ -1,0 +1,117 @@
+use io::eprintln
+
+fn abs(v: i32) i32 {
+    if v < 0 {
+        back 0 - v
+    }
+    back v
+}
+
+fn max(a: i32, b: i32) i32 {
+    if a > b {
+        back a
+    }
+    back b
+}
+
+fn min(a: i32, b: i32) i32 {
+    if a < b {
+        back a
+    }
+    back b
+}
+
+fn pow(base: i32, exp: i32) i32 {
+    if exp < 0 {
+        eprintln("math.pow: negative exponent")
+        halt
+    }
+    let r: i32 = 1
+    let i: i32 = 0
+    while i < exp {
+        r = r * base
+        i = i + 1
+    }
+    back r
+}
+
+fn sqrt(n: i32) i32 {
+    if n < 0 {
+        eprintln("math.sqrt: negative number")
+        halt
+    }
+    let lo: i32 = 0
+    let hi: i32 = n + 1
+    while lo < hi {
+        let mid: i32 = (lo + hi + 1) / 2
+        if mid * mid <= n {
+            lo = mid
+        } else {
+            hi = mid - 1
+        }
+    }
+    back lo
+}
+
+fn gcd(a: i32, b: i32) i32 {
+    let x: i32 = a
+    let y: i32 = b
+    if x < 0 {
+        x = 0 - x
+    }
+    if y < 0 {
+        y = 0 - y
+    }
+    while y != 0 {
+        let t: i32 = x % y
+        x = y
+        y = t
+    }
+    back x
+}
+
+fn lcm(a: i32, b: i32) i32 {
+    if a == 0 or b == 0 {
+        back 0
+    }
+    back (a / gcd(a, b)) * b
+}
+
+fn mod(a: i32, b: i32) i32 {
+    if b == 0 {
+        eprintln("math.mod: division by zero")
+        halt
+    }
+    let r: i32 = a % b
+    if r != 0 and ((r < 0) != (b < 0)) {
+        r = r + b
+    }
+    back r
+}
+
+fn clamp(v: i32, lo: i32, hi: i32) i32 {
+    if v < lo {
+        back lo
+    }
+    if v > hi {
+        back hi
+    }
+    back v
+}
+
+fn sign(v: i32) i32 {
+    if v > 0 {
+        back 1
+    }
+    if v < 0 {
+        back 0 - 1
+    }
+    back 0
+}
+
+fn absdiff(a: i32, b: i32) i32 {
+    if a > b {
+        back a - b
+    }
+    back b - a
+}

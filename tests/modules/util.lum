@@ -1,0 +1,7 @@
+fn double(n: i32) i32 {
+    back n * 2
+}
+
+fn greet() string {
+    back "hello from util"
+}

@@ -1,0 +1,35 @@
+use sys::file_exists as _exists
+use sys::file_read as _read
+use sys::file_write as _write
+use sys::file_append as _append
+use sys::file_remove as _remove
+use sys::file_rename as _rename
+use sys::file_size as _size
+
+fn exists(path: string) bool {
+    back _exists(path)
+}
+
+fn read(path: string) string {
+    back _read(path)
+}
+
+fn write(path: string, data: string) i32 {
+    back _write(path, data)
+}
+
+fn append(path: string, data: string) i32 {
+    back _append(path, data)
+}
+
+fn remove(path: string) i32 {
+    back _remove(path)
+}
+
+fn rename(old: string, neo: string) i32 {
+    back _rename(old, neo)
+}
+
+fn size(path: string) i32 {
+    back _size(path)
+}

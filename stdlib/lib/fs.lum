@@ -1,0 +1,35 @@
+use sys::fs_is_dir as _is_dir
+use sys::fs_is_file as _is_file
+use sys::fs_mkdir as _mkdir
+use sys::fs_rmdir as _rmdir
+use sys::fs_list as _list
+use sys::fs_join as _join
+use sys::fs_abs as _abs
+
+fn is_dir(path: string) bool {
+    back _is_dir(path)
+}
+
+fn is_file(path: string) bool {
+    back _is_file(path)
+}
+
+fn mkdir(path: string) i32 {
+    back _mkdir(path)
+}
+
+fn rmdir(path: string) i32 {
+    back _rmdir(path)
+}
+
+fn list(path: string) string {
+    back _list(path)
+}
+
+fn join(a: string, b: string) string {
+    back _join(a, b)
+}
+
+fn abs(path: string) string {
+    back _abs(path)
+}

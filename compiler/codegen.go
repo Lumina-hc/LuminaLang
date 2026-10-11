@@ -4,78 +4,283 @@ import (
 	"fmt"
 	"luminalang/ast"
 	"luminalang/token"
+	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 )
 
-func (c *Compiler) genFunction(fn *ast.FnDecl) (string, error) {
-	ctx := &fnCtx{
-		c:        c,
-		retType:  typeFromName(fn.RetType),
-		varTypes: make(map[string]Type),
-		forVars:  make(map[string]string),
-	}
+type globalStr struct {
+	name  string
+	bytes []byte
+}
 
-	var sig strings.Builder
-	sig.WriteString("func lumf_")
-	sig.WriteString(fn.Name)
-	sig.WriteString("(")
+type slot struct {
+	ptr string
+	typ Type
+}
+
+type loopInfo struct {
+	cont string
+	brk  string
+}
+
+type fnCtx struct {
+	c       *Compiler
+	retType Type
+	module  string
+	scopes  []map[string]slot
+}
+
+func (ctx *fnCtx) pushScope() {
+	ctx.scopes = append(ctx.scopes, make(map[string]slot))
+}
+
+func (ctx *fnCtx) popScope() {
+	ctx.scopes = ctx.scopes[:len(ctx.scopes)-1]
+}
+
+func (ctx *fnCtx) declare(name string, s slot) {
+	ctx.scopes[len(ctx.scopes)-1][name] = s
+}
+
+func (ctx *fnCtx) declaredHere(name string) bool {
+	_, ok := ctx.scopes[len(ctx.scopes)-1][name]
+	return ok
+}
+
+func (ctx *fnCtx) lookup(name string) (slot, bool) {
+	for i := len(ctx.scopes) - 1; i >= 0; i-- {
+		if s, ok := ctx.scopes[i][name]; ok {
+			return s, true
+		}
+	}
+	return slot{}, false
+}
+
+type irFn struct {
+	ret        Type
+	buf        strings.Builder
+	allocaBuf  strings.Builder
+	ntmp       int
+	nlab       int
+	nvar       int
+	terminated bool
+	loops      []loopInfo
+}
+
+func (f *irFn) alloc(instr string) {
+	f.allocaBuf.WriteString("  " + instr + "\n")
+}
+
+func (f *irFn) newSlot(name string, t Type) slot {
+	f.nvar++
+	ptr := fmt.Sprintf("%%%s.%d_addr", name, f.nvar)
+	f.alloc(fmt.Sprintf("%s = alloca %s", ptr, irType(t)))
+	return slot{ptr: ptr, typ: t}
+}
+
+func llvmFloat(v float64) string {
+	s := strconv.FormatFloat(v, 'e', -1, 64)
+	if !strings.ContainsAny(s, ".") {
+		if i := strings.IndexAny(s, "eE"); i >= 0 {
+			s = s[:i] + ".0" + s[i:]
+		} else {
+			s += ".0"
+		}
+	}
+	return s
+}
+
+func (f *irFn) tmp() string {
+	s := fmt.Sprintf("%%t%d", f.ntmp)
+	f.ntmp++
+	return s
+}
+
+func (f *irFn) label() string {
+	s := fmt.Sprintf("L%d", f.nlab)
+	f.nlab++
+	return s
+}
+
+func (f *irFn) emit(instr string) {
+	if f.terminated {
+		f.buf.WriteString(f.label() + ":\n")
+		f.terminated = false
+	}
+	f.buf.WriteString("  " + instr + "\n")
+}
+
+func (f *irFn) place(l string) {
+	f.buf.WriteString(l + ":\n")
+	f.terminated = false
+}
+
+func (f *irFn) term(instr string) {
+	f.emit(instr)
+	f.terminated = true
+}
+
+func (f *irFn) store(s slot, val string) {
+	f.emit(fmt.Sprintf("store %s %s, %s* %s", irType(s.typ), val, irType(s.typ), s.ptr))
+}
+
+func irParams(fn *ast.FnDecl) string {
+	params := make([]string, len(fn.Params))
 	for i, p := range fn.Params {
-		if i > 0 {
-			sig.WriteString(", ")
-		}
-		sig.WriteString("lumv_")
-		sig.WriteString(p.Name)
-		sig.WriteString(" ")
-		sig.WriteString(goTypeName(typeFromName(p.Type)))
-		ctx.varTypes[p.Name] = typeFromName(p.Type)
+		params[i] = irType(typeFromName(p.Type))
 	}
-	sig.WriteString(") ")
-	sig.WriteString(goTypeName(ctx.retType))
-	sig.WriteString(" {\n")
+	return strings.Join(params, ", ")
+}
 
-	for _, st := range fn.Body {
-		if err := c.collectLetsInStmt(ctx, st); err != nil {
-			return "", err
+func targetTriple() string {
+	switch runtime.GOOS {
+	case "windows":
+		if runtime.GOARCH == "arm64" {
+			return "aarch64-pc-windows-msvc"
 		}
+		return "x86_64-pc-windows-msvc"
+	case "darwin":
+		if runtime.GOARCH == "arm64" {
+			return "arm64-apple-macosx"
+		}
+		return "x86_64-apple-macosx"
+	case "linux":
+		if runtime.GOARCH == "arm64" {
+			return "aarch64-unknown-linux-gnu"
+		}
+		return "x86_64-unknown-linux-gnu"
 	}
+	return "x86_64-unknown-linux-gnu"
+}
 
-	var body strings.Builder
-	for _, st := range fn.Body {
-		code, err := c.genStmt(ctx, st)
+func (c *Compiler) genProgram() (string, error) {
+	names := make([]string, 0, len(c.functions))
+	for n := range c.functions {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+
+	var fns []string
+	emitted := make(map[string]bool)
+	for _, n := range names {
+		if c.emitModule != "" && c.fnModule[n] != c.emitModule {
+			continue
+		}
+		if c.libMods[c.fnModule[n]] {
+			continue
+		}
+		txt, err := c.genFunction(n, c.functions[n])
 		if err != nil {
 			return "", err
 		}
-		body.WriteString(code)
+		fns = append(fns, txt)
+		emitted[n] = true
 	}
 
-	var out strings.Builder
-	out.WriteString(sig.String())
-	for name := range ctx.varTypes {
-		if isParamName(fn, name) {
+	var ext []string
+	for _, n := range names {
+		if emitted[n] {
 			continue
 		}
-		out.WriteString("    var lumv_")
-		out.WriteString(name)
-		out.WriteString(" ")
-		out.WriteString(goTypeName(ctx.varTypes[name]))
-		out.WriteString("\n")
+		ext = append(ext, fmt.Sprintf("declare %s @%s(%s)", irType(typeFromName(c.functions[n].RetType)), mangle(n), irParams(c.functions[n])))
 	}
-	out.WriteString(body.String())
-	out.WriteString("    return " + defaultReturn(ctx.retType) + "\n")
-	out.WriteString("}\n")
-	return out.String(), nil
+
+	var b strings.Builder
+	b.WriteString("; generated by LuminaLang\n")
+	if c.emitModule == "" {
+		b.WriteString("target triple = \"" + targetTriple() + "\"\n")
+	}
+	b.WriteString("\n")
+	b.WriteString(declText())
+	for _, d := range ext {
+		b.WriteString(d)
+		b.WriteString("\n")
+	}
+	b.WriteString("\n")
+	for _, g := range c.globals {
+		b.WriteString(fmt.Sprintf("%s = private unnamed_addr constant [%d x i8] %s, align 1\n",
+			g.name, len(g.bytes)+1, irString(g.bytes)))
+	}
+	b.WriteString("\n")
+	for _, fn := range fns {
+		b.WriteString(fn)
+		b.WriteString("\n")
+	}
+	return b.String(), nil
 }
 
-func defaultReturn(t Type) string {
-	switch t {
-	case TBool:
-		return "false"
-	case TStr:
-		return `""`
-	default:
-		return "0"
+func declText() string {
+	sig := make(map[string]builtin)
+	for _, b := range builtins {
+		if b.cname != "" {
+			sig[b.cname] = b
+		}
 	}
+	names := make([]string, 0, len(sig))
+	for n := range sig {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+
+	var sb strings.Builder
+	for _, n := range names {
+		b := sig[n]
+		params := make([]string, len(b.args))
+		for i, a := range b.args {
+			params[i] = abiType(a)
+		}
+		sb.WriteString(fmt.Sprintf("declare %s @%s(%s)\n", abiType(b.ret), n, strings.Join(params, ", ")))
+	}
+	sb.WriteString(sliceDeclText)
+	return sb.String()
+}
+
+const sliceDeclText = `declare i64 @lum_slice_len(i8*)
+declare i8* @lum_slice_new(i64)
+declare i64 @lum_slice_get_int(i8*, i64)
+declare double @lum_slice_get_f64(i8*, i64)
+declare i64 @lum_slice_get_bool(i8*, i64)
+declare i8* @lum_slice_get_str(i8*, i64)
+declare void @lum_slice_set_int(i8*, i64, i64)
+declare void @lum_slice_set_f64(i8*, i64, double)
+declare void @lum_slice_set_bool(i8*, i64, i64)
+declare void @lum_slice_set_str(i8*, i64, i8*)
+declare i8* @lum_slice_push_int(i8*, i64)
+declare i8* @lum_slice_push_f64(i8*, double)
+declare i8* @lum_slice_push_bool(i8*, i64)
+declare i8* @lum_slice_push_str(i8*, i8*)
+`
+
+func irString(data []byte) string {
+	var sb strings.Builder
+	sb.WriteString("c\"")
+	for _, ch := range data {
+		switch {
+		case ch == '"':
+			sb.WriteString("\\22")
+		case ch == '\\':
+			sb.WriteString("\\5C")
+		case ch >= 0x20 && ch < 0x7F:
+			sb.WriteByte(ch)
+		default:
+			sb.WriteString(fmt.Sprintf("\\%02X", ch))
+		}
+	}
+	sb.WriteString("\\00\"")
+	return sb.String()
+}
+
+func (c *Compiler) addString(s string) (string, int) {
+	idx := len(c.globals)
+	name := fmt.Sprintf("@.str%d", idx)
+	if c.emitModule != "" {
+		name = fmt.Sprintf("@.str.%s.%d", c.emitModule, idx)
+	}
+	b := []byte(s)
+	c.globals = append(c.globals, globalStr{name: name, bytes: b})
+	return name, len(b) + 1
 }
 
 func isParamName(fn *ast.FnDecl, name string) bool {
@@ -87,322 +292,927 @@ func isParamName(fn *ast.FnDecl, name string) bool {
 	return false
 }
 
-func (c *Compiler) genStmt(ctx *fnCtx, st ast.Stmt) (string, error) {
-	switch v := st.(type) {
-	case *ast.LetStmt:
-		code, t, err := c.genExpr(ctx, v.Init)
-		if err != nil {
-			return "", err
-		}
-		declType, ok := ctx.varTypes[v.Name]
-		if !ok {
-			return "", fmt.Errorf("compile error: unknown variable '%s'", v.Name)
-		}
-		if t != declType {
-			return "", fmt.Errorf("compile error: cannot assign %s to variable '%s' of type %s", t, v.Name, declType)
-		}
-		return "    lumv_" + v.Name + " = " + code + "\n", nil
-	case *ast.AssignStmt:
-		code, t, err := c.genExpr(ctx, v.Expr)
-		if err != nil {
-			return "", err
-		}
-		vt, ok := ctx.varTypes[v.Name]
-		if !ok {
-			return "", fmt.Errorf("compile error: undefined variable '%s'", v.Name)
-		}
-		if vt != t {
-			return "", fmt.Errorf("compile error: cannot assign %s to variable '%s' of type %s", t, v.Name, vt)
-		}
-		return "    lumv_" + v.Name + " = " + code + "\n", nil
-	case *ast.OutStmt:
-		code, _, err := c.genExpr(ctx, v.Expr)
-		if err != nil {
-			return "", err
-		}
-		return "    fmt.Println(" + code + ")\n", nil
-	case *ast.BackStmt:
-		code, t, err := c.genExpr(ctx, v.Expr)
-		if err != nil {
-			return "", err
-		}
-		if ctx.retType != t {
-			return "", fmt.Errorf("compile error: function returns %s but 'back' returns %s", ctx.retType, t)
-		}
-		return "    return " + code + "\n", nil
-	case *ast.HaltStmt:
-		if ctx.loopDepth > 0 {
-			return "    break\n", nil
-		}
-		return "    os.Exit(0)\n", nil
-	case *ast.SkipStmt:
-		if ctx.loopDepth > 0 {
-			return "    continue\n", nil
-		}
-		return "", fmt.Errorf("compile error: 'skip' used outside a loop")
-	case *ast.IfStmt:
-		return c.genIf(ctx, v)
-	case *ast.WhileStmt:
-		return c.genWhile(ctx, v)
-	case *ast.ForInStmt:
-		return c.genForIn(ctx, v)
-	case *ast.ExprStmt:
-		code, _, err := c.genExpr(ctx, v.Expr)
-		if err != nil {
-			return "", err
-		}
-		return "    " + code + "\n", nil
-	default:
-		return "", fmt.Errorf("compile error: unknown statement type")
-	}
+type diagError struct {
+	line, col int
+	msg       string
 }
 
-func (c *Compiler) genCond(ctx *fnCtx, e ast.Expr) (string, error) {
-	code, t, err := c.genExpr(ctx, e)
+func (d diagError) Error() string {
+	return fmt.Sprintf("%d:%d: %s", d.line, d.col, d.msg)
+}
+
+func withPos(st ast.Stmt, err error) error {
+	if err == nil {
+		return nil
+	}
+	if _, ok := err.(diagError); ok {
+		return err
+	}
+	var line, col int
+	if p, ok := st.(interface{ Pos() (int, int) }); ok {
+		line, col = p.Pos()
+	}
+	if line == 0 {
+		return err
+	}
+	return diagError{line: line, col: col, msg: err.Error()}
+}
+
+func (c *Compiler) genFunction(sym string, fn *ast.FnDecl) (string, error) {
+	f := &irFn{ret: typeFromName(fn.RetType)}
+	ctx := &fnCtx{
+		c:       c,
+		retType: f.ret,
+		module:  c.fnModule[sym],
+	}
+
+	var sig strings.Builder
+	sig.WriteString("define " + irType(f.ret) + " @" + mangle(sym) + "(")
+	for i, p := range fn.Params {
+		if i > 0 {
+			sig.WriteString(", ")
+		}
+		sig.WriteString(irType(typeFromName(p.Type)) + " %lumv_" + p.Name)
+	}
+	sig.WriteString(") {\n")
+
+	ctx.pushScope()
+	for _, p := range fn.Params {
+		if ctx.declaredHere(p.Name) {
+			return "", fmt.Errorf("compile error: duplicate parameter '%s'", p.Name)
+		}
+		t := typeFromName(p.Type)
+		s := f.newSlot(p.Name, t)
+		f.emit(fmt.Sprintf("store %s %s, %s* %s", irType(t), "%lumv_"+p.Name, irType(t), s.ptr))
+		ctx.declare(p.Name, s)
+	}
+
+	for _, st := range fn.Body {
+		if err := c.genStmt(f, ctx, st); err != nil {
+			return "", withPos(st, err)
+		}
+	}
+	if !f.terminated {
+		v, err := c.defaultValue(f, f.ret)
+		if err != nil {
+			return "", err
+		}
+		f.term("ret " + irType(f.ret) + " " + v)
+	}
+
+	var out strings.Builder
+	out.WriteString(sig.String())
+	out.WriteString("entry:\n")
+	out.WriteString(f.allocaBuf.String())
+	out.WriteString(f.buf.String())
+	out.WriteString("}\n")
+	return out.String(), nil
+}
+
+func zeroValue(t Type) string {
+	switch t {
+	case TBool:
+		return "false"
+	case TStr, TSliceInt, TSliceFloat, TSliceBool, TSliceStr:
+		return "null"
+	}
+	return "0"
+}
+
+func (c *Compiler) defaultValue(f *irFn, t Type) (string, error) {
+	if t == TStr {
+		name, length := c.addString("")
+		p := f.tmp()
+		f.emit(fmt.Sprintf("%s = getelementptr inbounds [%d x i8], [%d x i8]* %s, i64 0, i64 0", p, length, length, name))
+		return p, nil
+	}
+	return zeroValue(t), nil
+}
+
+func (c *Compiler) genStmt(f *irFn, ctx *fnCtx, st ast.Stmt) error {
+	switch v := st.(type) {
+	case *ast.LetStmt:
+		var val string
+		var t Type
+		if lit, ok := v.Init.(*ast.SliceLiteral); ok && len(lit.Elems) == 0 {
+			dt := typeFromName(v.Type)
+			if sliceElem(dt) == TInvalid {
+				return fmt.Errorf("compile error: cannot determine element type of empty slice literal")
+			}
+			var err error
+			val, err = c.emptySlice(f, dt)
+			if err != nil {
+				return err
+			}
+			t = dt
+		} else {
+			var err error
+			val, t, err = c.genExpr(f, ctx, v.Init)
+			if err != nil {
+				return err
+			}
+		}
+		if v.Type != "" {
+			dt := typeFromName(v.Type)
+			if dt != t {
+				return fmt.Errorf("compile error: variable '%s' declared as %s but initialised with %s", v.Name, dt, t)
+			}
+			t = dt
+		}
+		if ctx.declaredHere(v.Name) {
+			return fmt.Errorf("compile error: variable '%s' already declared in this scope", v.Name)
+		}
+		s := f.newSlot(v.Name, t)
+		ctx.declare(v.Name, s)
+		f.store(s, val)
+		return nil
+	case *ast.AssignStmt:
+		val, t, err := c.genExpr(f, ctx, v.Expr)
+		if err != nil {
+			return err
+		}
+		s, ok := ctx.lookup(v.Name)
+		if !ok {
+			return fmt.Errorf("compile error: undefined variable '%s'", v.Name)
+		}
+		if s.typ != t {
+			return fmt.Errorf("compile error: cannot assign %s to variable '%s' of type %s", t, v.Name, s.typ)
+		}
+		f.store(s, val)
+		return nil
+	case *ast.IndexAssignStmt:
+		return c.genSliceSet(f, ctx, v)
+	case *ast.OutStmt:
+		val, t, err := c.genExpr(f, ctx, v.Expr)
+		if err != nil {
+			return err
+		}
+		_, err = c.emitPrint(f, "println", val, t)
+		return err
+	case *ast.BackStmt:
+		var val string
+		var t Type
+		if lit, ok := v.Expr.(*ast.SliceLiteral); ok && len(lit.Elems) == 0 {
+			if sliceElem(f.ret) == TInvalid {
+				return fmt.Errorf("compile error: cannot determine element type of empty slice literal")
+			}
+			var err error
+			val, err = c.emptySlice(f, f.ret)
+			if err != nil {
+				return err
+			}
+			t = f.ret
+		} else {
+			var err error
+			val, t, err = c.genExpr(f, ctx, v.Expr)
+			if err != nil {
+				return err
+			}
+		}
+		if t != f.ret {
+			return fmt.Errorf("compile error: function returns %s but 'back' returns %s", f.ret, t)
+		}
+		f.term("ret " + irType(f.ret) + " " + val)
+		return nil
+	case *ast.HaltStmt:
+		if len(f.loops) > 0 {
+			f.term("br label %" + f.loops[len(f.loops)-1].brk)
+			return nil
+		}
+		f.emit("call i64 @lum_os_exit(i64 0)")
+		f.term("unreachable")
+		return nil
+	case *ast.SkipStmt:
+		if len(f.loops) == 0 {
+			return fmt.Errorf("compile error: 'skip' used outside a loop")
+		}
+		f.term("br label %" + f.loops[len(f.loops)-1].cont)
+		return nil
+	case *ast.IfStmt:
+		return c.genIf(f, ctx, v)
+	case *ast.WhileStmt:
+		return c.genWhile(f, ctx, v)
+	case *ast.ForInStmt:
+		return c.genForIn(f, ctx, v)
+	case *ast.ExprStmt:
+		_, _, err := c.genExpr(f, ctx, v.Expr)
+		return err
+	}
+	return fmt.Errorf("compile error: unknown statement type")
+}
+
+func (c *Compiler) genCond(f *irFn, ctx *fnCtx, e ast.Expr) (string, error) {
+	val, t, err := c.genExpr(f, ctx, e)
 	if err != nil {
 		return "", err
 	}
 	switch t {
 	case TBool:
-		return code, nil
+		return val, nil
 	case TInt:
-		return "lum_truthy(" + code + ")", nil
-	default:
-		return "", fmt.Errorf("compile error: condition must be i32 or bool, got %s", t)
+		r := f.tmp()
+		f.emit(fmt.Sprintf("%s = icmp ne i64 %s, 0", r, val))
+		return r, nil
 	}
+	return "", fmt.Errorf("compile error: condition must be i32 or bool, got %s", t)
 }
 
-func (c *Compiler) genIf(ctx *fnCtx, s *ast.IfStmt) (string, error) {
-	var sb strings.Builder
-	cond, err := c.genCond(ctx, s.Cond)
-	if err != nil {
-		return "", err
-	}
-	sb.WriteString("    if " + cond + " {\n")
-	for _, st := range s.Then {
-		code, err := c.genStmt(ctx, st)
-		if err != nil {
-			return "", err
-		}
-		sb.WriteString(code)
-	}
-	for i, econd := range s.ElifConds {
-		ec, err := c.genCond(ctx, econd)
-		if err != nil {
-			return "", err
-		}
-		sb.WriteString("    } else if " + ec + " {\n")
-		for _, st := range s.ElifBodies[i] {
-			code, err := c.genStmt(ctx, st)
-			if err != nil {
-				return "", err
-			}
-			sb.WriteString(code)
+func (c *Compiler) genBlock(f *irFn, ctx *fnCtx, stmts []ast.Stmt) error {
+	ctx.pushScope()
+	defer ctx.popScope()
+	for _, st := range stmts {
+		if err := c.genStmt(f, ctx, st); err != nil {
+			return withPos(st, err)
 		}
 	}
+	return nil
+}
+
+func (c *Compiler) genIf(f *irFn, ctx *fnCtx, s *ast.IfStmt) error {
+	conds := append([]ast.Expr{s.Cond}, s.ElifConds...)
+	bodies := append([][]ast.Stmt{s.Then}, s.ElifBodies...)
+
+	after := f.label()
+	elseL := ""
 	if s.ElseBody != nil {
-		sb.WriteString("    } else {\n")
-		for _, st := range s.ElseBody {
-			code, err := c.genStmt(ctx, st)
-			if err != nil {
-				return "", err
-			}
-			sb.WriteString(code)
-		}
+		elseL = f.label()
 	}
-	sb.WriteString("    }\n")
-	return sb.String(), nil
-}
-
-func (c *Compiler) genWhile(ctx *fnCtx, s *ast.WhileStmt) (string, error) {
-	cond, err := c.genCond(ctx, s.Cond)
-	if err != nil {
-		return "", err
-	}
-	sub := *ctx
-	sub.loopDepth++
-	var sb strings.Builder
-	sb.WriteString("    for " + cond + " {\n")
-	for _, st := range s.Body {
-		code, err := c.genStmt(&sub, st)
+	for i := range conds {
+		cv, err := c.genCond(f, ctx, conds[i])
 		if err != nil {
-			return "", err
+			return err
 		}
-		sb.WriteString(code)
+		thenL := f.label()
+		var next string
+		if i+1 < len(conds) {
+			next = f.label()
+		} else if elseL != "" {
+			next = elseL
+		} else {
+			next = after
+		}
+		f.term(fmt.Sprintf("br i1 %s, label %%%s, label %%%s", cv, thenL, next))
+		f.place(thenL)
+		if err := c.genBlock(f, ctx, bodies[i]); err != nil {
+			return err
+		}
+		if !f.terminated {
+			f.term("br label %" + after)
+		}
+		if i+1 < len(conds) {
+			f.place(next)
+		}
 	}
-	sb.WriteString("    }\n")
-	return sb.String(), nil
+	if elseL != "" {
+		f.place(elseL)
+		if err := c.genBlock(f, ctx, s.ElseBody); err != nil {
+			return err
+		}
+		if !f.terminated {
+			f.term("br label %" + after)
+		}
+	}
+	f.place(after)
+	return nil
 }
 
-func (c *Compiler) genForIn(ctx *fnCtx, s *ast.ForInStmt) (string, error) {
-	iter, t, err := c.genExpr(ctx, s.IterExpr)
+func (c *Compiler) genWhile(f *irFn, ctx *fnCtx, s *ast.WhileStmt) error {
+	condL := f.label()
+	bodyL := f.label()
+	after := f.label()
+	f.term("br label %" + condL)
+	f.place(condL)
+	cv, err := c.genCond(f, ctx, s.Cond)
 	if err != nil {
-		return "", err
+		return err
+	}
+	f.term(fmt.Sprintf("br i1 %s, label %%%s, label %%%s", cv, bodyL, after))
+	f.place(bodyL)
+	f.loops = append(f.loops, loopInfo{cont: condL, brk: after})
+	if err := c.genBlock(f, ctx, s.Body); err != nil {
+		return err
+	}
+	f.loops = f.loops[:len(f.loops)-1]
+	if !f.terminated {
+		f.term("br label %" + condL)
+	}
+	f.place(after)
+	return nil
+}
+
+func (c *Compiler) genForIn(f *irFn, ctx *fnCtx, s *ast.ForInStmt) error {
+	iter, t, err := c.genExpr(f, ctx, s.IterExpr)
+	if err != nil {
+		return err
 	}
 	if t != TStr {
-		return "", fmt.Errorf("compile error: 'for...in' requires a string")
+		return fmt.Errorf("compile error: 'for...in' requires a string")
 	}
-	n := c.counter
-	c.counter++
-	runeName := fmt.Sprintf("lumfr%d", n)
-	varName := fmt.Sprintf("lumfv%d", n)
-
-	sub := *ctx
-	if sub.forVars == nil {
-		sub.forVars = make(map[string]string)
+	ctx.pushScope()
+	defer ctx.popScope()
+	if ctx.declaredHere(s.VarName) {
+		return fmt.Errorf("compile error: variable '%s' already declared in this scope", s.VarName)
 	}
-	sub.forVars[s.VarName] = varName
-	sub.loopDepth++
+	slot := f.newSlot(s.VarName, TStr)
+	ctx.declare(s.VarName, slot)
 
-	var body strings.Builder
+	lenr := f.tmp()
+	f.emit(fmt.Sprintf("%s = call i64 @lum_utf8_len(i8* %s)", lenr, iter))
+	idxp := f.tmp()
+	f.alloc(fmt.Sprintf("%s = alloca i64", idxp))
+	f.emit(fmt.Sprintf("store i64 0, i64* %s", idxp))
+
+	loopL := f.label()
+	bodyL := f.label()
+	incrL := f.label()
+	after := f.label()
+
+	f.term("br label %" + loopL)
+	f.place(loopL)
+	iv := f.tmp()
+	f.emit(fmt.Sprintf("%s = load i64, i64* %s", iv, idxp))
+	cv := f.tmp()
+	f.emit(fmt.Sprintf("%s = icmp slt i64 %s, %s", cv, iv, lenr))
+	f.term(fmt.Sprintf("br i1 %s, label %%%s, label %%%s", cv, bodyL, after))
+
+	f.place(bodyL)
+	ch := f.tmp()
+	f.emit(fmt.Sprintf("%s = call i8* @lum_utf8_at(i8* %s, i64 %s)", ch, iter, iv))
+	f.store(slot, ch)
+	f.loops = append(f.loops, loopInfo{cont: incrL, brk: after})
 	for _, st := range s.Body {
-		code, err := c.genStmt(&sub, st)
-		if err != nil {
-			return "", err
+		if err := c.genStmt(f, ctx, st); err != nil {
+			return withPos(st, err)
 		}
-		body.WriteString(code)
+	}
+	f.loops = f.loops[:len(f.loops)-1]
+	if !f.terminated {
+		f.term("br label %" + incrL)
 	}
 
-	var sb strings.Builder
-	sb.WriteString("    for _, ")
-	sb.WriteString(runeName)
-	sb.WriteString(" := range ")
-	sb.WriteString(iter)
-	sb.WriteString(" {\n")
-	sb.WriteString("        ")
-	sb.WriteString(varName)
-	sb.WriteString(" := string(")
-	sb.WriteString(runeName)
-	sb.WriteString(")\n")
-	sb.WriteString(body.String())
-	sb.WriteString("    }\n")
-	return sb.String(), nil
+	f.place(incrL)
+	v2 := f.tmp()
+	f.emit(fmt.Sprintf("%s = load i64, i64* %s", v2, idxp))
+	v3 := f.tmp()
+	f.emit(fmt.Sprintf("%s = add i64 %s, 1", v3, v2))
+	f.emit(fmt.Sprintf("store i64 %s, i64* %s", v3, idxp))
+	f.term("br label %" + loopL)
+
+	f.place(after)
+	return nil
 }
 
-func (c *Compiler) genExpr(ctx *fnCtx, e ast.Expr) (string, Type, error) {
+func (c *Compiler) genExpr(f *irFn, ctx *fnCtx, e ast.Expr) (string, Type, error) {
 	switch v := e.(type) {
 	case *ast.IntLiteral:
 		return strconv.FormatInt(v.Value, 10), TInt, nil
+	case *ast.FloatLiteral:
+		return llvmFloat(v.Value), TFloat, nil
 	case *ast.StringLiteral:
-		return strconv.Quote(v.Value), TStr, nil
+		name, length := c.addString(v.Value)
+		p := f.tmp()
+		f.emit(fmt.Sprintf("%s = getelementptr inbounds [%d x i8], [%d x i8]* %s, i64 0, i64 0", p, length, length, name))
+		return p, TStr, nil
 	case *ast.BoolLiteral:
 		if v.Value {
 			return "true", TBool, nil
 		}
 		return "false", TBool, nil
 	case *ast.Ident:
-		if gn, ok := ctx.forVars[v.Name]; ok {
-			return gn, TStr, nil
-		}
-		t, ok := ctx.varTypes[v.Name]
+		s, ok := ctx.lookup(v.Name)
 		if !ok {
 			return "", TInvalid, fmt.Errorf("compile error: undefined variable '%s'", v.Name)
 		}
-		return "lumv_" + v.Name, t, nil
+		t := f.tmp()
+		f.emit(fmt.Sprintf("%s = load %s, %s* %s", t, irType(s.typ), irType(s.typ), s.ptr))
+		return t, s.typ, nil
 	case *ast.BinaryExpr:
-		return c.genBinary(ctx, v)
+		if v.Op == token.TK_AND || v.Op == token.TK_OR {
+			return c.genLogical(f, ctx, v)
+		}
+		return c.genBinary(f, ctx, v)
 	case *ast.UnaryExpr:
-		code, t, err := c.genExpr(ctx, v.Right)
+		val, t, err := c.genExpr(f, ctx, v.Right)
 		if err != nil {
 			return "", TInvalid, err
 		}
-		if v.Op == token.TK_MINUS {
-			if t != TInt {
-				return "", TInvalid, fmt.Errorf("compile error: cannot negate %s", t)
+		switch v.Op {
+		case token.TK_MINUS:
+			r := f.tmp()
+			switch t {
+			case TInt:
+				f.emit(fmt.Sprintf("%s = sub i64 0, %s", r, val))
+				return r, TInt, nil
+			case TFloat:
+				f.emit(fmt.Sprintf("%s = fneg double %s", r, val))
+				return r, TFloat, nil
 			}
-			return "(-" + code + ")", TInt, nil
+			return "", TInvalid, fmt.Errorf("compile error: cannot negate %s", t)
+		case token.TK_TILDE:
+			if t != TInt {
+				return "", TInvalid, fmt.Errorf("compile error: cannot apply ~ to %s", t)
+			}
+			r := f.tmp()
+			f.emit(fmt.Sprintf("%s = xor i64 %s, -1", r, val))
+			return r, TInt, nil
+		case token.TK_NOT:
+			if t != TBool {
+				return "", TInvalid, fmt.Errorf("compile error: cannot apply 'not' to %s", t)
+			}
+			r := f.tmp()
+			f.emit(fmt.Sprintf("%s = xor i1 %s, true", r, val))
+			return r, TBool, nil
 		}
-		return code, t, nil
+		return val, t, nil
 	case *ast.CallExpr:
-		return c.genCall(ctx, v)
+		return c.genCall(f, ctx, v)
+	case *ast.SliceLiteral:
+		return c.genSliceLit(f, ctx, v)
+	case *ast.IndexExpr:
+		return c.genSliceGet(f, ctx, v)
 	case *ast.InputExpr:
-		return "lum_input()", TInt, nil
-	default:
-		return "", TInvalid, fmt.Errorf("compile error: unknown expression type")
+		r := f.tmp()
+		f.emit(fmt.Sprintf("%s = call i64 @lum_input()", r))
+		return r, TInt, nil
 	}
+	return "", TInvalid, fmt.Errorf("compile error: unknown expression type")
 }
 
-func (c *Compiler) genBinary(ctx *fnCtx, v *ast.BinaryExpr) (string, Type, error) {
-	left, lt, err := c.genExpr(ctx, v.Left)
+func (c *Compiler) genBinary(f *irFn, ctx *fnCtx, v *ast.BinaryExpr) (string, Type, error) {
+	l, lt, err := c.genExpr(f, ctx, v.Left)
 	if err != nil {
 		return "", TInvalid, err
 	}
-	right, rt, err := c.genExpr(ctx, v.Right)
+	r, rt, err := c.genExpr(f, ctx, v.Right)
 	if err != nil {
 		return "", TInvalid, err
 	}
-	switch v.Op {
-	case token.TK_PLUS:
-		if lt == TStr && rt == TStr {
-			return "(" + left + " + " + right + ")", TStr, nil
-		}
-		if lt == TInt && rt == TInt {
-			return "(" + left + " + " + right + ")", TInt, nil
-		}
-		return "", TInvalid, fmt.Errorf("compile error: cannot add %s and %s", lt, rt)
-	case token.TK_MINUS, token.TK_STAR:
+
+	intArith := func(op string) (string, Type, error) {
 		if lt != TInt || rt != TInt {
 			return "", TInvalid, fmt.Errorf("compile error: operator requires i32 operands, got %s and %s", lt, rt)
 		}
-		op := "*"
-		if v.Op == token.TK_MINUS {
-			op = "-"
+		t := f.tmp()
+		f.emit(fmt.Sprintf("%s = %s i64 %s, %s", t, op, l, r))
+		return t, TInt, nil
+	}
+
+	floatArith := func(op string) (string, Type, error) {
+		if lt != TFloat || rt != TFloat {
+			return "", TInvalid, fmt.Errorf("compile error: operator requires f64 operands, got %s and %s", lt, rt)
 		}
-		return "(" + left + " " + op + " " + right + ")", TInt, nil
+		t := f.tmp()
+		f.emit(fmt.Sprintf("%s = %s double %s, %s", t, op, l, r))
+		return t, TFloat, nil
+	}
+
+	switch v.Op {
+	case token.TK_PLUS:
+		if lt == TStr && rt == TStr {
+			t := f.tmp()
+			f.emit(fmt.Sprintf("%s = call i8* @lum_str_concat(i8* %s, i8* %s)", t, l, r))
+			return t, TStr, nil
+		}
+		if lt == TFloat && rt == TFloat {
+			return floatArith("fadd")
+		}
+		return intArith("add")
+	case token.TK_MINUS:
+		if lt == TFloat && rt == TFloat {
+			return floatArith("fsub")
+		}
+		return intArith("sub")
+	case token.TK_STAR:
+		if lt == TFloat && rt == TFloat {
+			return floatArith("fmul")
+		}
+		return intArith("mul")
 	case token.TK_SLASH:
+		if lt == TFloat && rt == TFloat {
+			return floatArith("fdiv")
+		}
 		if lt != TInt || rt != TInt {
 			return "", TInvalid, fmt.Errorf("compile error: operator '/' requires i32 operands, got %s and %s", lt, rt)
 		}
-		return "lum_div(" + left + ", " + right + ")", TInt, nil
-	case token.TK_EQ, token.TK_NEQ:
-		if lt != rt {
-			return "", TInvalid, fmt.Errorf("compile error: cannot compare %s and %s", lt, rt)
-		}
-		if v.Op == token.TK_EQ {
-			return "(" + left + " == " + right + ")", TBool, nil
-		}
-		return "(" + left + " != " + right + ")", TBool, nil
-	case token.TK_LT, token.TK_GT, token.TK_LE, token.TK_GE:
+		t := f.tmp()
+		f.emit(fmt.Sprintf("%s = call i64 @lum_div(i64 %s, i64 %s)", t, l, r))
+		return t, TInt, nil
+	case token.TK_PERCENT:
 		if lt != TInt || rt != TInt {
-			return "", TInvalid, fmt.Errorf("compile error: relational operator requires i32 operands, got %s and %s", lt, rt)
+			return "", TInvalid, fmt.Errorf("compile error: operator '%%' requires i32 operands, got %s and %s", lt, rt)
 		}
-		var op string
-		switch v.Op {
-		case token.TK_LT:
-			op = "<"
-		case token.TK_GT:
-			op = ">"
-		case token.TK_LE:
-			op = "<="
-		case token.TK_GE:
-			op = ">="
-		}
-		return "(" + left + " " + op + " " + right + ")", TBool, nil
-	default:
-		return "", TInvalid, fmt.Errorf("compile error: unknown operator")
+		t := f.tmp()
+		f.emit(fmt.Sprintf("%s = call i64 @lum_mod(i64 %s, i64 %s)", t, l, r))
+		return t, TInt, nil
+	case token.TK_AMP:
+		return intArith("and")
+	case token.TK_PIPE:
+		return intArith("or")
+	case token.TK_CARET:
+		return intArith("xor")
+	case token.TK_SHL:
+		return intArith("shl")
+	case token.TK_SHR:
+		return intArith("ashr")
+	case token.TK_EQ, token.TK_NEQ:
+		return c.genCompare(f, lt, rt, l, r, v.Op)
+	case token.TK_LT, token.TK_GT, token.TK_LE, token.TK_GE:
+		return c.genCompare(f, lt, rt, l, r, v.Op)
 	}
+	return "", TInvalid, fmt.Errorf("compile error: unknown operator")
 }
 
-func (c *Compiler) genCall(ctx *fnCtx, v *ast.CallExpr) (string, Type, error) {
-	var args []string
-	for _, a := range v.Args {
-		code, _, err := c.genExpr(ctx, a)
+func (c *Compiler) genLogical(f *irFn, ctx *fnCtx, v *ast.BinaryExpr) (string, Type, error) {
+	lt, err := c.inferExprType(ctx, v.Left)
+	if err != nil {
+		return "", TInvalid, err
+	}
+	rt, err := c.inferExprType(ctx, v.Right)
+	if err != nil {
+		return "", TInvalid, err
+	}
+	if lt != TBool || rt != TBool {
+		return "", TInvalid, fmt.Errorf("compile error: logical operator requires bool operands, got %s and %s", lt, rt)
+	}
+	res := f.tmp() + "_addr"
+	f.alloc(fmt.Sprintf("%s = alloca i1", res))
+
+	lval, _, err := c.genExpr(f, ctx, v.Left)
+	if err != nil {
+		return "", TInvalid, err
+	}
+	f.emit(fmt.Sprintf("store i1 %s, i1* %s", lval, res))
+
+	rhs := f.label()
+	end := f.label()
+	if v.Op == token.TK_AND {
+		f.term(fmt.Sprintf("br i1 %s, label %%%s, label %%%s", lval, rhs, end))
+	} else {
+		f.term(fmt.Sprintf("br i1 %s, label %%%s, label %%%s", lval, end, rhs))
+	}
+
+	f.place(rhs)
+	rval, _, err := c.genExpr(f, ctx, v.Right)
+	if err != nil {
+		return "", TInvalid, err
+	}
+	f.emit(fmt.Sprintf("store i1 %s, i1* %s", rval, res))
+	f.term("br label %" + end)
+
+	f.place(end)
+	out := f.tmp()
+	f.emit(fmt.Sprintf("%s = load i1, i1* %s", out, res))
+	return out, TBool, nil
+}
+
+func (c *Compiler) genCompare(f *irFn, lt, rt Type, l, r string, op token.TokenType) (string, Type, error) {
+	if lt != rt {
+		return "", TInvalid, fmt.Errorf("compile error: cannot compare %s and %s", lt, rt)
+	}
+	switch lt {
+	case TStr:
+		e := f.tmp()
+		f.emit(fmt.Sprintf("%s = call i32 @lum_str_eq(i8* %s, i8* %s)", e, l, r))
+		b := f.tmp()
+		cc := "ne"
+		if op == token.TK_NEQ {
+			cc = "eq"
+		}
+		f.emit(fmt.Sprintf("%s = icmp %s i32 %s, 0", b, cc, e))
+		return b, TBool, nil
+	case TBool:
+		b := f.tmp()
+		cc := "eq"
+		if op == token.TK_NEQ {
+			cc = "ne"
+		}
+		f.emit(fmt.Sprintf("%s = icmp %s i1 %s, %s", b, cc, l, r))
+		return b, TBool, nil
+	case TInt:
+		b := f.tmp()
+		cc := map[token.TokenType]string{
+			token.TK_EQ: "eq", token.TK_NEQ: "ne",
+			token.TK_LT: "slt", token.TK_GT: "sgt",
+			token.TK_LE: "sle", token.TK_GE: "sge",
+		}[op]
+		f.emit(fmt.Sprintf("%s = icmp %s i64 %s, %s", b, cc, l, r))
+		return b, TBool, nil
+	case TFloat:
+		b := f.tmp()
+		cc := map[token.TokenType]string{
+			token.TK_EQ: "oeq", token.TK_NEQ: "une",
+			token.TK_LT: "olt", token.TK_GT: "ogt",
+			token.TK_LE: "ole", token.TK_GE: "oge",
+		}[op]
+		f.emit(fmt.Sprintf("%s = fcmp %s double %s, %s", b, cc, l, r))
+		return b, TBool, nil
+	}
+	return "", TInvalid, fmt.Errorf("compile error: cannot compare %s", lt)
+}
+
+func (c *Compiler) genCall(f *irFn, ctx *fnCtx, v *ast.CallExpr) (string, Type, error) {
+	target, fn, ok := c.lookupCall(ctx.module, v.Callee)
+	if !ok {
+		return c.genSliceCall(f, ctx, v)
+	}
+	if target.kind == 1 {
+		if len(v.Args) != len(fn.Params) {
+			return "", TInvalid, fmt.Errorf("compile error: function '%s' expects %d args, got %d", v.Callee, len(fn.Params), len(v.Args))
+		}
+		args := make([]string, 0, len(v.Args))
+		for i, a := range v.Args {
+			val, at, err := c.genExpr(f, ctx, a)
+			if err != nil {
+				return "", TInvalid, err
+			}
+			pt := typeFromName(fn.Params[i].Type)
+			if at != pt {
+				return "", TInvalid, fmt.Errorf("compile error: argument %d of '%s' expects %s, got %s", i+1, v.Callee, pt, at)
+			}
+			args = append(args, irType(pt)+" "+val)
+		}
+		ret := typeFromName(fn.RetType)
+		t := f.tmp()
+		f.emit(fmt.Sprintf("%s = call %s @%s(%s)", t, irType(ret), mangle(target.symbol), strings.Join(args, ", ")))
+		return t, ret, nil
+	}
+
+	full := target.builtin
+	b := builtins[full]
+	if b.print != "" {
+		if len(v.Args) != 1 {
+			return "", TInvalid, fmt.Errorf("compile error: function '%s' expects 1 arg, got %d", v.Callee, len(v.Args))
+		}
+		val, at, err := c.genExpr(f, ctx, v.Args[0])
 		if err != nil {
 			return "", TInvalid, err
 		}
-		args = append(args, code)
-	}
-	if fn, ok := c.functions[v.Callee]; ok {
-		if len(args) != len(fn.Params) {
-			return "", TInvalid, fmt.Errorf("compile error: function '%s' expects %d args, got %d", v.Callee, len(fn.Params), len(args))
+		r, err := c.emitPrint(f, b.print, val, at)
+		if err != nil {
+			return "", TInvalid, err
 		}
-		ret := typeFromName(fn.RetType)
-		return "lumf_" + v.Callee + "(" + strings.Join(args, ", ") + ")", ret, nil
+		return r, TInt, nil
 	}
-	full, ok := c.imports[v.Callee]
+	if len(v.Args) != len(b.args) {
+		return "", TInvalid, fmt.Errorf("compile error: function '%s' expects %d args, got %d", v.Callee, len(b.args), len(v.Args))
+	}
+	args := make([]string, 0, len(v.Args))
+	for i, a := range v.Args {
+		val, at, err := c.genExpr(f, ctx, a)
+		if err != nil {
+			return "", TInvalid, err
+		}
+		want := b.args[i]
+		if want != TAny && at != want {
+			return "", TInvalid, fmt.Errorf("compile error: argument %d of '%s' expects %s, got %s", i+1, v.Callee, want, at)
+		}
+		if at == TBool {
+			z := f.tmp()
+			f.emit(fmt.Sprintf("%s = zext i1 %s to i32", z, val))
+			val = z
+		}
+		args = append(args, abiType(at)+" "+val)
+	}
+	t := f.tmp()
+	f.emit(fmt.Sprintf("%s = call %s @%s(%s)", t, abiType(b.ret), b.cname, strings.Join(args, ", ")))
+	if b.ret == TBool {
+		b2 := f.tmp()
+		f.emit(fmt.Sprintf("%s = icmp ne i32 %s, 0", b2, t))
+		return b2, TBool, nil
+	}
+	return t, b.ret, nil
+}
+
+func (c *Compiler) emitPrint(f *irFn, stem, val string, t Type) (string, error) {
+	suffix := printSuffix(t)
+	if suffix == "" {
+		return "", fmt.Errorf("compile error: cannot print a value of type %s", t)
+	}
+	arg := val
+	if t == TBool {
+		z := f.tmp()
+		f.emit(fmt.Sprintf("%s = zext i1 %s to i32", z, val))
+		arg = z
+	}
+	cname := fmt.Sprintf("lum_io_%s_%s", stem, suffix)
+	r := f.tmp()
+	f.emit(fmt.Sprintf("%s = call i64 @%s(%s %s)", r, cname, abiType(t), arg))
+	return r, nil
+}
+
+func sliceAtom(elem Type) string {
+	switch elem {
+	case TInt, TBool:
+		return "i64"
+	case TFloat:
+		return "double"
+	case TStr:
+		return "i8*"
+	}
+	return "i64"
+}
+
+func sliceGetFn(elem Type) string {
+	switch elem {
+	case TInt:
+		return "lum_slice_get_int"
+	case TFloat:
+		return "lum_slice_get_f64"
+	case TBool:
+		return "lum_slice_get_bool"
+	case TStr:
+		return "lum_slice_get_str"
+	}
+	return "lum_slice_get_int"
+}
+
+func sliceSetFn(elem Type) string {
+	switch elem {
+	case TInt:
+		return "lum_slice_set_int"
+	case TFloat:
+		return "lum_slice_set_f64"
+	case TBool:
+		return "lum_slice_set_bool"
+	case TStr:
+		return "lum_slice_set_str"
+	}
+	return "lum_slice_set_int"
+}
+
+func slicePushFn(elem Type) string {
+	switch elem {
+	case TInt:
+		return "lum_slice_push_int"
+	case TFloat:
+		return "lum_slice_push_f64"
+	case TBool:
+		return "lum_slice_push_bool"
+	case TStr:
+		return "lum_slice_push_str"
+	}
+	return "lum_slice_push_int"
+}
+
+func (c *Compiler) sliceVal(f *irFn, elem Type, val string) (string, error) {
+	switch elem {
+	case TBool:
+		z := f.tmp()
+		f.emit(fmt.Sprintf("%s = zext i1 %s to i64", z, val))
+		return z, nil
+	case TInt, TFloat, TStr:
+		return val, nil
+	}
+	return "", fmt.Errorf("compile error: invalid element type %s", elem)
+}
+
+func (c *Compiler) emptySlice(f *irFn, t Type) (string, error) {
+	r := f.tmp()
+	f.emit(fmt.Sprintf("%s = call i8* @lum_slice_new(i64 0)", r))
+	return r, nil
+}
+
+func (c *Compiler) genSliceLit(f *irFn, ctx *fnCtx, v *ast.SliceLiteral) (string, Type, error) {
+	if len(v.Elems) == 0 {
+		return "", TInvalid, fmt.Errorf("compile error: cannot determine element type of empty slice literal")
+	}
+	vals := make([]string, 0, len(v.Elems))
+	types := make([]Type, 0, len(v.Elems))
+	for _, e := range v.Elems {
+		val, t, err := c.genExpr(f, ctx, e)
+		if err != nil {
+			return "", TInvalid, err
+		}
+		vals = append(vals, val)
+		types = append(types, t)
+	}
+	elem := types[0]
+	for _, t := range types[1:] {
+		if t != elem {
+			return "", TInvalid, fmt.Errorf("compile error: slice literal mixes %s and %s values", elem, t)
+		}
+	}
+	sl := f.tmp()
+	f.emit(fmt.Sprintf("%s = call i8* @lum_slice_new(i64 %d)", sl, len(vals)))
+	at := sliceAtom(elem)
+	for i, val := range vals {
+		z, err := c.sliceVal(f, elem, val)
+		if err != nil {
+			return "", TInvalid, err
+		}
+		f.emit(fmt.Sprintf("call void @%s(i8* %s, i64 %d, %s %s)", sliceSetFn(elem), sl, i, at, z))
+	}
+	return sl, sliceOf(elem), nil
+}
+
+func (c *Compiler) genSliceGet(f *irFn, ctx *fnCtx, v *ast.IndexExpr) (string, Type, error) {
+	sl, st, err := c.genExpr(f, ctx, v.Target)
+	if err != nil {
+		return "", TInvalid, err
+	}
+	elem := sliceElem(st)
+	if elem == TInvalid {
+		return "", TInvalid, fmt.Errorf("compile error: cannot index a value of type %s", st)
+	}
+	idx, it, err := c.genExpr(f, ctx, v.Index)
+	if err != nil {
+		return "", TInvalid, err
+	}
+	if it != TInt {
+		return "", TInvalid, fmt.Errorf("compile error: slice index must be i32, got %s", it)
+	}
+	r := f.tmp()
+	at := sliceAtom(elem)
+	f.emit(fmt.Sprintf("%s = call %s @%s(i8* %s, i64 %s)", r, at, sliceGetFn(elem), sl, idx))
+	if elem == TBool {
+		b := f.tmp()
+		f.emit(fmt.Sprintf("%s = icmp ne i64 %s, 0", b, r))
+		return b, TBool, nil
+	}
+	return r, elem, nil
+}
+
+func (c *Compiler) genSliceSet(f *irFn, ctx *fnCtx, v *ast.IndexAssignStmt) error {
+	s, ok := ctx.lookup(v.Name)
 	if !ok {
-		return "", TInvalid, fmt.Errorf("compile error: undefined function '%s'", v.Callee)
+		return fmt.Errorf("compile error: undefined variable '%s'", v.Name)
 	}
-	b := builtins[full]
-	return "lum_" + strings.ReplaceAll(full, ".", "_") + "(" + strings.Join(args, ", ") + ")", b.ret, nil
+	elem := sliceElem(s.typ)
+	if elem == TInvalid {
+		return fmt.Errorf("compile error: cannot index variable '%s' of type %s", v.Name, s.typ)
+	}
+	sl := f.tmp()
+	f.emit(fmt.Sprintf("%s = load i8*, i8** %s", sl, s.ptr))
+	idx, it, err := c.genExpr(f, ctx, v.Index)
+	if err != nil {
+		return err
+	}
+	if it != TInt {
+		return fmt.Errorf("compile error: slice index must be i32, got %s", it)
+	}
+	val, vt, err := c.genExpr(f, ctx, v.Value)
+	if err != nil {
+		return err
+	}
+	if vt != elem {
+		return fmt.Errorf("compile error: cannot assign %s to element of %s", vt, s.typ)
+	}
+	z, err := c.sliceVal(f, elem, val)
+	if err != nil {
+		return err
+	}
+	f.emit(fmt.Sprintf("call void @%s(i8* %s, i64 %s, %s %s)", sliceSetFn(elem), sl, idx, sliceAtom(elem), z))
+	return nil
+}
+
+func (c *Compiler) genSliceCall(f *irFn, ctx *fnCtx, v *ast.CallExpr) (string, Type, error) {
+	switch v.Callee {
+	case "len":
+		if len(v.Args) != 1 {
+			return "", TInvalid, fmt.Errorf("compile error: 'len' expects 1 argument, got %d", len(v.Args))
+		}
+		val, t, err := c.genExpr(f, ctx, v.Args[0])
+		if err != nil {
+			return "", TInvalid, err
+		}
+		var fn string
+		switch t {
+		case TStr:
+			fn = "lum_utf8_len"
+		case TSliceInt, TSliceFloat, TSliceBool, TSliceStr:
+			fn = "lum_slice_len"
+		default:
+			return "", TInvalid, fmt.Errorf("compile error: 'len' expects a string or slice, got %s", t)
+		}
+		r := f.tmp()
+		f.emit(fmt.Sprintf("%s = call i64 @%s(i8* %s)", r, fn, val))
+		return r, TInt, nil
+	case "push", "append":
+		if len(v.Args) != 2 {
+			return "", TInvalid, fmt.Errorf("compile error: '%s' expects 2 arguments, got %d", v.Callee, len(v.Args))
+		}
+		sl, st, err := c.genExpr(f, ctx, v.Args[0])
+		if err != nil {
+			return "", TInvalid, err
+		}
+		elem := sliceElem(st)
+		if elem == TInvalid {
+			return "", TInvalid, fmt.Errorf("compile error: '%s' expects a slice as first argument, got %s", v.Callee, st)
+		}
+		val, vt, err := c.genExpr(f, ctx, v.Args[1])
+		if err != nil {
+			return "", TInvalid, err
+		}
+		if vt != elem {
+			return "", TInvalid, fmt.Errorf("compile error: cannot %s %s into %s", v.Callee, vt, st)
+		}
+		z, err := c.sliceVal(f, elem, val)
+		if err != nil {
+			return "", TInvalid, err
+		}
+		r := f.tmp()
+		f.emit(fmt.Sprintf("%s = call i8* @%s(i8* %s, %s %s)", r, slicePushFn(elem), sl, sliceAtom(elem), z))
+		return r, st, nil
+	}
+	return "", TInvalid, fmt.Errorf("compile error: undefined function '%s'", v.Callee)
 }

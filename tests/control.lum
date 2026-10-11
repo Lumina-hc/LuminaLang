@@ -1,0 +1,19 @@
+fn main() i32 {
+    let score: i32 = 85
+    if score >= 90 {
+        out "A"
+    } elif score >= 60 {
+        out "B"
+    } else {
+        out "C"
+    }
+    let i: i32 = 0
+    while i < 3 {
+        out i
+        i = i + 1
+    }
+    for ch in "hi" {
+        out ch
+    }
+    back 0
+}

@@ -117,6 +117,10 @@ func (l *Lexer) scanToken() error {
 		l.addToken(token.TK_RBRACE, 0)
 	case ',':
 		l.addToken(token.TK_COMMA, 0)
+	case '[':
+		l.addToken(token.TK_LBRACKET, 0)
+	case ']':
+		l.addToken(token.TK_RBRACKET, 0)
 	case ':':
 		if l.match(':') {
 			l.addToken(token.TK_DCOLON, 0)
@@ -133,20 +137,34 @@ func (l *Lexer) scanToken() error {
 		if l.match('=') {
 			l.addToken(token.TK_NEQ, 0)
 		} else {
-			return fmt.Errorf("line %d: syntax error, unexpected character '!'", l.line)
+			return fmt.Errorf("%d:%d: syntax error, unexpected character '!'", l.line, l.column-1)
 		}
 	case '<':
 		if l.match('=') {
 			l.addToken(token.TK_LE, 0)
+		} else if l.match('<') {
+			l.addToken(token.TK_SHL, 0)
 		} else {
 			l.addToken(token.TK_LT, 0)
 		}
 	case '>':
 		if l.match('=') {
 			l.addToken(token.TK_GE, 0)
+		} else if l.match('>') {
+			l.addToken(token.TK_SHR, 0)
 		} else {
 			l.addToken(token.TK_GT, 0)
 		}
+	case '&':
+		l.addToken(token.TK_AMP, 0)
+	case '|':
+		l.addToken(token.TK_PIPE, 0)
+	case '^':
+		l.addToken(token.TK_CARET, 0)
+	case '~':
+		l.addToken(token.TK_TILDE, 0)
+	case '%':
+		l.addToken(token.TK_PERCENT, 0)
 	case '"':
 		return l.scanString()
 	default:
@@ -155,7 +173,7 @@ func (l *Lexer) scanToken() error {
 		} else if isIdentStart(ch) {
 			l.identifier()
 		} else {
-			return fmt.Errorf("line %d: syntax error, unexpected character '%c'", l.line, ch)
+			return fmt.Errorf("%d:%d: syntax error, unexpected character '%c'", l.line, l.column-1, ch)
 		}
 	}
 	return nil
@@ -183,18 +201,39 @@ func (l *Lexer) skipBlockComment() error {
 		}
 		l.current++
 	}
-	return fmt.Errorf("line %d: unterminated block comment", l.line)
+	return fmt.Errorf("%d:%d: unterminated block comment", l.line, l.column)
 }
 
 func (l *Lexer) number() error {
 	for !l.atEnd() && unicode.IsDigit(l.peek()) {
 		l.advance()
 	}
-	if !l.atEnd() && (l.peek() == '.' || l.peek() == 'e' || l.peek() == 'E') {
-		return fmt.Errorf("line %d: type error, floating-point literals not supported", l.line)
+	isFloat := false
+	if !l.atEnd() && l.peek() == '.' {
+		isFloat = true
+		l.advance()
+		for !l.atEnd() && unicode.IsDigit(l.peek()) {
+			l.advance()
+		}
+	}
+	if !l.atEnd() && (l.peek() == 'e' || l.peek() == 'E') {
+		isFloat = true
+		l.advance()
+		if !l.atEnd() && (l.peek() == '+' || l.peek() == '-') {
+			l.advance()
+		}
+		for !l.atEnd() && unicode.IsDigit(l.peek()) {
+			l.advance()
+		}
+	}
+	lexeme := string(l.source[l.start:l.current])
+	if isFloat {
+		l.addToken(token.TK_FLOAT, 0)
+		l.tokens[len(l.tokens)-1].Lexeme = lexeme
+		return nil
 	}
 	val := int64(0)
-	for _, ch := range l.source[l.start:l.current] {
+	for _, ch := range lexeme {
 		val = val*10 + int64(ch-'0')
 	}
 	l.addToken(token.TK_INT, val)
@@ -228,7 +267,7 @@ func (l *Lexer) scanString() error {
 		}
 	}
 	if l.atEnd() {
-		return fmt.Errorf("line %d: unterminated string literal", l.line)
+		return fmt.Errorf("%d:%d: unterminated string literal", l.line, l.column)
 	}
 	l.advance()
 	l.addToken(token.TK_STRING, 0)
@@ -249,6 +288,7 @@ var keywords = map[string]token.TokenType{
 	"halt":   token.TK_HALT,
 	"skip":   token.TK_SKIP,
 	"i32":    token.TK_I32,
+	"f64":    token.TK_F64,
 	"bool":   token.TK_BOOL,
 	"true":   token.TK_TRUE,
 	"false":  token.TK_FALSE,
@@ -256,6 +296,10 @@ var keywords = map[string]token.TokenType{
 	"in":     token.TK_IN,
 	"use":    token.TK_USE,
 	"string": token.TK_STRING_TYPE,
+	"and":    token.TK_AND,
+	"or":     token.TK_OR,
+	"not":    token.TK_NOT,
+	"as":     token.TK_AS,
 }
 
 func (l *Lexer) identifier() {

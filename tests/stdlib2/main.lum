@@ -1,0 +1,27 @@
+use random::seed
+use random::int as rint
+use fs::is_dir
+use fs::is_file
+use fs::join
+use fs::abs
+use fs::mkdir
+use fs::rmdir
+
+fn main() i32 {
+    seed(12345)
+    let a: i32 = rint(1, 6)
+    let b: i32 = rint(1, 6)
+    out a >= 1 and a <= 5
+    out b >= 1 and b <= 5
+    out is_dir(".")
+    out is_file(".")
+    out abs(".") != ""
+    out join(".", "x") != ""
+
+    let d: string = ".lumina_fs_test_dir"
+    rmdir(d)
+    out mkdir(d)
+    out is_dir(d)
+    out rmdir(d)
+    back 0
+}

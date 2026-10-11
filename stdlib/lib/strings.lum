@@ -1,0 +1,161 @@
+use sys::rune_len as _rune_len
+use sys::rune_at as _rune_at
+use sys::ord as _ord
+use sys::chr as _chr
+use sys::byte_len as _byte_len
+use sys::slice as _slice
+
+fn len(s: string) i32 {
+    back _rune_len(s)
+}
+
+fn len_bytes(s: string) i32 {
+    back _byte_len(s)
+}
+
+fn char_at(s: string, i: i32) string {
+    back _rune_at(s, i)
+}
+
+fn upper(s: string) string {
+    let r: string = ""
+    for c in s {
+        let o: i32 = _ord(c)
+        if o >= 97 and o <= 122 {
+            r = r + _chr(o - 32)
+        } else {
+            r = r + c
+        }
+    }
+    back r
+}
+
+fn lower(s: string) string {
+    let r: string = ""
+    for c in s {
+        let o: i32 = _ord(c)
+        if o >= 65 and o <= 90 {
+            r = r + _chr(o + 32)
+        } else {
+            r = r + c
+        }
+    }
+    back r
+}
+
+fn is_space(c: string) bool {
+    if c == " " or c == "\t" or c == "\n" or c == "\r" {
+        back true
+    }
+    back false
+}
+
+fn trim(s: string) string {
+    let n: i32 = _byte_len(s)
+    let a: i32 = 0
+    while a < n and is_space(_slice(s, a, a + 1)) {
+        a = a + 1
+    }
+    let b: i32 = n
+    while b > a and is_space(_slice(s, b - 1, b)) {
+        b = b - 1
+    }
+    back _slice(s, a, b)
+}
+
+fn index(s: string, sub: string) i32 {
+    let n: i32 = _byte_len(s)
+    let m: i32 = _byte_len(sub)
+    if m == 0 {
+        back 0
+    }
+    let i: i32 = 0
+    while i + m <= n {
+        if _slice(s, i, i + m) == sub {
+            back i
+        }
+        i = i + 1
+    }
+    back 0 - 1
+}
+
+fn contains(s: string, sub: string) bool {
+    back index(s, sub) >= 0
+}
+
+fn startswith(s: string, prefix: string) bool {
+    let m: i32 = _byte_len(prefix)
+    if m > _byte_len(s) {
+        back false
+    }
+    back _slice(s, 0, m) == prefix
+}
+
+fn endswith(s: string, suffix: string) bool {
+    let ls: i32 = _byte_len(s)
+    let lf: i32 = _byte_len(suffix)
+    if lf > ls {
+        back false
+    }
+    back _slice(s, ls - lf, ls) == suffix
+}
+
+fn repeat(s: string, n: i32) string {
+    let r: string = ""
+    let i: i32 = 0
+    while i < n {
+        r = r + s
+        i = i + 1
+    }
+    back r
+}
+
+fn substr(s: string, start: i32, length: i32) string {
+    let l: i32 = _byte_len(s)
+    let st: i32 = start
+    if st < 0 {
+        st = 0
+    }
+    if st > l {
+        st = l
+    }
+    let ln: i32 = length
+    if ln < 0 {
+        ln = 0
+    }
+    if st + ln > l {
+        ln = l - st
+    }
+    back _slice(s, st, st + ln)
+}
+
+fn replace(s: string, old: string, neo: string) string {
+    let lo: i32 = _byte_len(old)
+    if lo == 0 {
+        back s
+    }
+    let r: string = ""
+    let n: i32 = _byte_len(s)
+    let i: i32 = 0
+    while i < n {
+        if i + lo <= n and _slice(s, i, i + lo) == old {
+            r = r + neo
+            i = i + lo
+        } else {
+            r = r + _slice(s, i, i + 1)
+            i = i + 1
+        }
+    }
+    back r
+}
+
+fn reverse(s: string) string {
+    let r: string = ""
+    let n: i32 = _rune_len(s)
+    let i: i32 = n - 1
+    while i >= 0 {
+        r = r + _rune_at(s, i)
+        i = i - 1
+    }
+    back r
+}

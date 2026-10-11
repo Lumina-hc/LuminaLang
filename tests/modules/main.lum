@@ -1,0 +1,9 @@
+use util::double, greet
+use derived::quad
+
+fn main() i32 {
+    out double(21)
+    out greet()
+    out quad(5)
+    back 0
+}

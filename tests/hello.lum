@@ -1,0 +1,6 @@
+fn main() i32 {
+    out "Hello, World!"
+    out 3 + 5
+    out true
+    back 0
+}

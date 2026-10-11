@@ -1,0 +1,11 @@
+[package]
+name = "std"
+version = "1.2.0"
+description = "LuminaLang standard library"
+license = "Apache-2.0"
+authors = ["LuminaStudio"]
+
+[lib]
+modules = ["bits", "file", "fs", "io", "math", "os", "process", "random", "strconv", "strings", "time", "win"]
+
+[dependencies]

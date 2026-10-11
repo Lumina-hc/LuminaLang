@@ -1,0 +1,15 @@
+fn area(r: f64) f64 {
+    back 3.14159 * r * r
+}
+
+fn main() i32 {
+    out 1.5 + 2.25
+    out 10.0 / 4.0
+    out 2.0 * 3.0
+    out -1.5
+    out area(2.0)
+    out 3.5 > 2.0
+    let x: f64 = 5.5
+    out x
+    back 0
+}
