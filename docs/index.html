@@ -41,7 +41,7 @@
         }
         .hero h1 { font-size: 3rem; font-weight: 700; color: #111; margin-bottom: 1rem; }
         .hero h1 span { color: #0066cc; }
-        .hero p { font-size: 1.15rem; color: #666; max-width: 600px; margin: 0 auto 2rem; }
+        .hero p { font-size: 1.15rem; color: #666; max-width: 640px; margin: 0 auto 2rem; }
         .btn {
             display: inline-block; padding: 0.75rem 2rem; border-radius: 6px;
             text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;
@@ -77,6 +77,12 @@
         .install-steps code {
             background: #f0f0f0; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.85rem;
         }
+        .codeblock {
+            background: #1e1e1e; color: #e6e6e6; border-radius: 8px;
+            padding: 1rem 1.25rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.55;
+            margin-top: 1rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+        .codeblock .c { color: #7f8c98; }
         footer {
             text-align: center; padding: 2rem; border-top: 1px solid #e5e5e5; color: #999; font-size: 0.85rem;
         }
@@ -89,6 +95,7 @@
         <div class="right">
             <a href="#features" data-en="Features" data-zh="特性">Features</a>
             <a href="#stdlib" data-en="Stdlib" data-zh="标准库">Stdlib</a>
+            <a href="#packages" data-en="Packages" data-zh="包管理">Packages</a>
             <a href="#build" data-en="Build" data-zh="构建">Build</a>
             <a href="https://github.com/Lumina-hc/LuminaLang">GitHub</a>
             <button class="lang-btn" onclick="toggleLang()">EN / 中文</button>
@@ -97,7 +104,7 @@
 
     <div class="hero">
         <h1>Lumina<span>Lang</span></h1>
-        <p data-en="A strongly-typed compiled language. Write .lum source, transpile to Go, build to a native executable." data-zh="强类型编译语言。编写 .lum 源码，转译为 Go，构建为原生可执行文件。">A strongly-typed compiled language. Write .lum source, transpile to Go, build to a native executable.</p>
+        <p data-en="A strongly-typed compiled language. Write .lum source, compile to LLVM IR, and build a native executable with clang — no interpreter, no heavy runtime." data-zh="强类型编译语言。编写 .lum 源码，编译为 LLVM IR，用 clang 构建原生可执行文件——无解释器，无笨重运行时。">A strongly-typed compiled language. Write .lum source, compile to LLVM IR, and build a native executable with clang — no interpreter, no heavy runtime.</p>
         <a href="https://github.com/Lumina-hc/LuminaLang" class="btn btn-primary" data-en="View on GitHub" data-zh="GitHub 查看">View on GitHub</a>
         <a href="#build" class="btn btn-outline" data-en="Get Started" data-zh="快速开始">Get Started</a>
     </div>
@@ -107,27 +114,27 @@
         <div class="features">
             <div class="feature">
                 <h3 data-en="Strong Typing" data-zh="强类型">Strong Typing</h3>
-                <p data-en="Three core types: i32, bool, string. Static type checking at compile time." data-zh="三种核心类型：i32、bool、string。编译时静态类型检查。">Three core types: i32, bool, string. Static type checking at compile time.</p>
+                <p data-en="Core types i32, f64, bool, string, plus dynamically-sized slices, all checked at compile time." data-zh="核心类型 i32、f64、bool、string，以及动态切片，全部在编译期检查。">Core types i32, f64, bool, string, plus dynamically-sized slices, all checked at compile time.</p>
             </div>
             <div class="feature">
                 <h3 data-en="Control Flow" data-zh="控制流">Control Flow</h3>
                 <p data-en="if / elif / else, while, for ... in, halt, skip." data-zh="if / elif / else、while、for ... in、halt、skip。">if / elif / else, while, for ... in, halt, skip.</p>
             </div>
             <div class="feature">
-                <h3 data-en="Functions" data-zh="函数">Functions</h3>
-                <p data-en="Parameters, return values, and recursion. Clean, readable syntax." data-zh="参数、返回值和递归。简洁可读的语法。">Parameters, return values, and recursion. Clean, readable syntax.</p>
+                <h3 data-en="Slices" data-zh="切片">Slices</h3>
+                <p data-en="[]i32, []f64, []bool, []string with literals, indexing, len and push/append." data-zh="[]i32、[]f64、[]bool、[]string，支持字面量、索引、len 和 push/append。">[]i32, []f64, []bool, []string with literals, indexing, len and push/append.</p>
             </div>
             <div class="feature">
-                <h3 data-en="Native Output" data-zh="原生输出">Native Output</h3>
-                <p data-en="Compiles to a single native executable with zero runtime dependencies." data-zh="编译为单个原生可执行文件，零运行时依赖。">Compiles to a single native executable with zero runtime dependencies.</p>
+                <h3 data-en="LLVM Backend" data-zh="LLVM 后端">LLVM Backend</h3>
+                <p data-en="Emits LLVM IR and links with clang: a single native executable that depends only on the OS runtime." data-zh="生成 LLVM IR 并用 clang 链接：单个原生可执行文件，仅依赖操作系统运行时。">Emits LLVM IR and links with clang: a single native executable that depends only on the OS runtime.</p>
             </div>
             <div class="feature">
                 <h3 data-en="Standard Library" data-zh="标准库">Standard Library</h3>
-                <p data-en="Math, bits, I/O, time, and OS modules with use imports." data-zh="数学、位运算、I/O、时间和操作系统模块，支持 use 导入。">Math, bits, I/O, time, and OS modules with use imports.</p>
+                <p data-en="Twelve modules written in LuminaLang itself, from math and strings to os, time, fs and random." data-zh="12 个用 LuminaLang 自身编写的模块，涵盖 math、strings 到 os、time、fs、random。">Twelve modules written in LuminaLang itself, from math and strings to os, time, fs and random.</p>
             </div>
             <div class="feature">
-                <h3 data-en="Go Backend" data-zh="Go 后端">Go Backend</h3>
-                <p data-en="Transpiles to Go, leveraging Go's fast compilation and cross-platform support." data-zh="转译为 Go，利用 Go 的快速编译和跨平台支持。">Transpiles to Go, leveraging Go's fast compilation and cross-platform support.</p>
+                <h3 data-en="Package Manager" data-zh="包管理器">Package Manager</h3>
+                <p data-en="photon: a package is just a git repository. Install with pho; photon.lock pins every commit for reproducible builds." data-zh="photon：一个包就是一个 git 仓库。用 pho 安装；photon.lock 钉住每个 commit，构建可复现。">photon: a package is just a git repository. Install with pho; photon.lock pins every commit for reproducible builds.</p>
             </div>
         </div>
     </div>
@@ -138,10 +145,11 @@
             <ol>
                 <li><span data-en="Output:" data-zh="输出：">Output:</span> <code>out "Hello, World!"</code></li>
                 <li><span data-en="Variables:" data-zh="变量：">Variables:</span> <code>let name: i32 = 42</code></li>
-                <li><span data-en="Conditionals:" data-zh="条件：">Conditionals:</span> <code>if score >= 90 { ... } elif ... { ... } else { ... }</code></li>
+                <li><span data-en="Conditionals:" data-zh="条件：">Conditionals:</span> <code>if score &gt;= 90 { ... } elif ... { ... } else { ... }</code></li>
                 <li><span data-en="Loops:" data-zh="循环：">Loops:</span> <code>while i &lt; 5 { ... }</code> &nbsp; <code>for ch in "hello" { ... }</code></li>
                 <li><span data-en="Functions:" data-zh="函数：">Functions:</span> <code>fn add(a: i32, b: i32) i32 { back a + b }</code></li>
-                <li><span data-en="Imports:" data-zh="导入：">Imports:</span> <code>use io::readline</code></li>
+                <li><span data-en="Slices:" data-zh="切片：">Slices:</span> <code>let xs: []i32 = [1, 2, 3]</code> &nbsp; <code>xs = push(xs, 4)</code></li>
+                <li><span data-en="Imports:" data-zh="导入：">Imports:</span> <code>use math::sqrt</code></li>
             </ol>
         </div>
     </div>
@@ -156,24 +164,44 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td><code>math</code></td><td>abs, max, min, pow, sqrt, gcd, lcm, mod, clamp, sign</td></tr>
-                <tr><td><code>bits</code></td><td>and, or, xor, not, shl, shr, bit, setbit, clrbit, popcount</td></tr>
-                <tr><td><code>io</code></td><td>print, println, eprint, eprintln, readint, readline, flush</td></tr>
-                <tr><td><code>time</code></td><td>now, year, month, day, hour, minute, second, weekday, sleep_ms</td></tr>
-                <tr><td><code>os</code></td><td>exit, pid, ppid, args_count, sep, is_windows, getenv, cwd</td></tr>
+                <tr><td><code>math</code></td><td>abs, max, min, pow, sqrt, gcd, lcm, mod, clamp, sign, absdiff</td></tr>
+                <tr><td><code>bits</code></td><td>bit, setbit, clrbit, toggle, popcount, parity</td></tr>
+                <tr><td><code>strings</code></td><td>len, char_at, upper, lower, trim, index, contains, startswith, endswith, repeat, substr, replace, reverse</td></tr>
+                <tr><td><code>strconv</code></td><td>itoa, atoi, hex, bin, boolstr</td></tr>
+                <tr><td><code>io</code></td><td>print, println, eprint, eprintln, write, readline, readint, readall</td></tr>
+                <tr><td><code>os</code></td><td>getenv, setenv, cwd, chdir, pid, ppid, args_count, arg, exit, sep, is_windows, hostname</td></tr>
+                <tr><td><code>time</code></td><td>now, now_ms, year, month, day, hour, minute, second, weekday, sleep_ms</td></tr>
+                <tr><td><code>file</code></td><td>exists, read, write, append, remove, rename, size</td></tr>
+                <tr><td><code>fs</code></td><td>is_dir, is_file, mkdir, rmdir, list, join, abs</td></tr>
+                <tr><td><code>random</code></td><td>seed, int, float</td></tr>
+                <tr><td><code>process</code></td><td>system, exit, args_count, arg, getenv, args</td></tr>
+                <tr><td><code>win</code></td><td>msgbox, beep, tick_ms, console_title, last_error, sleep_ms</td></tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="section" id="packages">
+        <h2 data-en="Packages (photon)" data-zh="包管理（photon）">Packages (photon)</h2>
+        <p data-en="photon is the package manager. It is decentralised: a package is just a git repository, usually on GitHub, with no central registry. The command is pho." data-zh="photon 是包管理器，去中心化：一个包就是一个 git 仓库（通常在 GitHub），没有中心化注册表。命令是 pho。">photon is the package manager. It is decentralised: a package is just a git repository, usually on GitHub, with no central registry. The command is pho.</p>
+        <pre class="codeblock"><span class="c"># start a project and add a dependency</span>
+pho init myapp
+pho add github:Lumina-hc/sample_package@v0.1.0
+pho build</pre>
+        <p style="margin-top:1rem; font-size:0.9rem; color:#666;">
+            <span data-en="Packages ship source, a lumina.toml manifest, an optional declaration file (.lumi) and a precompiled .lumc library. Dependencies are resolved recursively and pinned in photon.lock." data-zh="包内含源码、lumina.toml 清单、可选的声明文件（.lumi）和预编译库（.lumc）。依赖会递归解析并钉在 photon.lock 中。">Packages ship source, a lumina.toml manifest, an optional declaration file (.lumi) and a precompiled .lumc library. Dependencies are resolved recursively and pinned in photon.lock.</span>
+        </p>
     </div>
 
     <div class="section" id="build">
         <h2 data-en="Quick Start" data-zh="快速开始">Quick Start</h2>
         <div class="install-steps">
             <ol>
-                <li data-en="Install Go 1.21 or later." data-zh="安装 Go 1.21 或更高版本。">Install Go 1.21 or later.</li>
-                <li data-en="Clone the repository:" data-zh="克隆仓库：">Clone the repository: <code>git clone https://github.com/Lumina-hc/LuminaLang.git</code></li>
-                <li data-en="Build the compiler:" data-zh="构建编译器：">Build the compiler: <code>go build -o luminalang.exe .</code></li>
-                <li data-en="Compile a program:" data-zh="编译程序：">Compile a program: <code>luminalang examples/test_bool_literals.lum</code></li>
-                <li data-en="Run it:" data-zh="运行：">Run it: <code>.\test_bool_literals.exe</code></li>
+                <li data-en="Install LLVM / clang and put it on your PATH (set LUMINA_CC to override)." data-zh="安装 LLVM / clang 并加入 PATH（可用 LUMINA_CC 覆盖）。">Install LLVM / clang and put it on your PATH (set LUMINA_CC to override).</li>
+                <li data-en="Install Go 1.21 or later (to build the compiler)." data-zh="安装 Go 1.21 或更高版本（用于构建编译器）。">Install Go 1.21 or later (to build the compiler).</li>
+                <li><span data-en="Clone the repository:" data-zh="克隆仓库：">Clone the repository:</span> <code>git clone https://github.com/Lumina-hc/LuminaLang.git</code></li>
+                <li><span data-en="Build the compiler:" data-zh="构建编译器：">Build the compiler:</span> <code>go build -o luminalang.exe .</code></li>
+                <li><span data-en="Compile a program:" data-zh="编译程序：">Compile a program:</span> <code>luminalang examples/test_bool_literals.lum</code></li>
+                <li><span data-en="Run it:" data-zh="运行：">Run it:</span> <code>.\test_bool_literals.exe</code></li>
             </ol>
         </div>
     </div>
