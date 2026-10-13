@@ -184,6 +184,22 @@ int lum_str_cmp(const char *a, const char *b) {
     return strcmp(a, b);
 }
 
+double lum_str_parse_f64(const char *s) {
+    if (!s) return 0.0;
+    return strtod(s, NULL);
+}
+
+const char *lum_str_format_f64(double v, int64_t prec) {
+    if (prec < 0) prec = 0;
+    if (prec > 17) prec = 17;
+    char buf[64];
+    snprintf(buf, sizeof(buf), "%.*f", (int)prec, v);
+    size_t n = strlen(buf);
+    char *r = (char *)lum_alloc(n + 1);
+    memcpy(r, buf, n + 1);
+    return r;
+}
+
 int64_t lum_div(int64_t a, int64_t b) {
     if (b == 0) {
         fputs("runtime error: division by zero\n", stderr);

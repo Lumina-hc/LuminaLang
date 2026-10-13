@@ -54,3 +54,40 @@ int64_t lum_time_sleep_ms(int64_t ms) {
 #endif
     return 0;
 }
+
+double lum_time_unix_f(void) {
+    return (double)lum_time_now_ms() / 1000.0;
+}
+
+const char *lum_time_now_str(void) {
+    time_t t = time(NULL);
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+#ifdef _WIN32
+    localtime_s(&tm, &t);
+#else
+    localtime_r(&t, &tm);
+#endif
+    char buf[40];
+    if (strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tm) == 0) {
+        buf[0] = 0;
+    }
+    return lum_dup(buf);
+}
+
+int64_t lum_time_utc_offset(void) {
+    time_t t = time(NULL);
+    struct tm lt, gt;
+    memset(&lt, 0, sizeof(lt));
+    memset(&gt, 0, sizeof(gt));
+#ifdef _WIN32
+    localtime_s(&lt, &t);
+    gmtime_s(&gt, &t);
+#else
+    localtime_r(&t, &lt);
+    gmtime_r(&t, &gt);
+#endif
+    time_t local = mktime(&lt);
+    time_t utc = mktime(&gt);
+    return (int64_t)difftime(local, utc);
+}

@@ -3,6 +3,8 @@ use sys::exit as _exit
 use sys::args_count as _args_count
 use sys::arg as _arg
 use sys::getenv as _getenv
+use sys::exec as _exec
+use sys::which as _which
 
 fn system(cmd: string) i32 {
     back _system(cmd)
@@ -22,6 +24,14 @@ fn arg(i: i32) string {
 
 fn getenv(name: string) string {
     back _getenv(name)
+}
+
+fn exec(cmd: string) string {
+    back _exec(cmd)
+}
+
+fn which(prog: string) string {
+    back _which(prog)
 }
 
 fn args() string {

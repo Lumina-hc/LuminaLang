@@ -13,6 +13,10 @@ use sys::hostname as _hostname
 use sys::temp_dir as _temp_dir
 use sys::username as _username
 use sys::arch as _arch
+use sys::home_dir as _home_dir
+use sys::is_admin as _is_admin
+use sys::page_size as _page_size
+use sys::uname as _uname
 
 fn getenv(name: string) string {
     back _getenv(name)
@@ -72,4 +76,20 @@ fn username() string {
 
 fn arch() i32 {
     back _arch()
+}
+
+fn home_dir() string {
+    back _home_dir()
+}
+
+fn is_admin() bool {
+    back _is_admin()
+}
+
+fn page_size() i32 {
+    back _page_size()
+}
+
+fn uname() string {
+    back _uname()
 }

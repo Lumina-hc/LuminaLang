@@ -17,7 +17,8 @@ against a tiny C runtime, so a "hello world" is roughly 100 KB instead of the
 - Functions with parameters and return values, including recursion
 - Modules: the standard library plus user modules in sibling `.lum` files
 - A standard library written in LuminaLang itself (`math`, `bits`, `strings`,
-  `strconv`, `os`, `time`, `file`, `fs`, `random`, `process`, `io`, `win`)
+  `strconv`, `collections`, `encoding`, `json`, `os`, `time`, `file`, `fs`,
+  `random`, `process`, `io`, `win`)
   on top of a thin `sys` C layer
 - A decentralised package manager (`pho`) with a manifest, lockfile and
   precompiled `.lumc` libraries
@@ -342,8 +343,9 @@ block comment.
 ## Standard library
 
 Most modules are pure LuminaLang (`stdlib/lib/<module>.lum`). Modules that need
-the operating system (`os`, `time`, `file`, `win`, the reading half of `io`)
-are thin LuminaLang wrappers over low-level `sys` C primitives.
+the operating system or C (`os`, `time`, `file`, `win`, `math` f64 helpers,
+`encoding`, the reading half of `io`) are thin LuminaLang wrappers over
+low-level `sys` C primitives.
 
 ```lum
 use strings::upper
@@ -352,17 +354,20 @@ use math::sqrt
 
 | Module | Functions |
 | ------ | --------- |
-| `math` | `abs`, `max`, `min`, `pow`, `sqrt`, `gcd`, `lcm`, `mod`, `clamp`, `sign`, `absdiff` |
+| `math` | `abs`, `max`, `min`, `pow`, `sqrt`, `gcd`, `lcm`, `mod`, `clamp`, `sign`, `absdiff`, and f64: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `sqrt_f`, `pow_f`, `fabs`, `ln`, `log10`, `log2`, `exp`, `floor`, `ceil`, `round`, `trunc`, `fmod`, `hypot`, `pi`, `e`, `tau` |
 | `bits` | `bit`, `setbit`, `clrbit`, `toggle`, `popcount`, `parity` |
-| `strings` | `len`, `len_bytes`, `char_at`, `upper`, `lower`, `trim`, `index`, `contains`, `startswith`, `endswith`, `repeat`, `substr`, `replace`, `reverse` |
-| `strconv` | `itoa`, `atoi`, `hex`, `bin`, `boolstr` |
+| `strings` | `len`, `len_bytes`, `char_at`, `upper`, `lower`, `trim`, `trim_left`, `trim_right`, `index`, `contains`, `startswith`, `endswith`, `repeat`, `substr`, `replace`, `reverse`, `count`, `split`, `split_lines`, `pad_left`, `pad_right` |
+| `strconv` | `itoa`, `atoi`, `atof`, `ftoa`, `fstr`, `hex`, `bin`, `from_base`, `parse_hex`, `boolstr` |
+| `collections` | `zeros`, `filled`, `sum`, `product`, `min`, `max`, `index_of`, `contains`, `count`, `reverse`, `sort`, `unique`, `range`, `sum_f`, `min_f`, `max_f`, `avg_f`, `index_of_s`, `contains_s`, `reverse_s`, `sort_s`, `join` |
+| `encoding` | `md5`, `sha1`, `sha256`, `crc32`, `base64_encode`, `base64_decode` |
+| `json` | `escape`, `unescape`, `quote`, `valid`, `kind`, `parse_int`, `parse_f64`, `parse_bool`, `num`, `numf`, `boolean`, `array_int`, `array_f64`, `array_bool`, `array_string` |
 | `io` | `print`, `println`, `eprint`, `eprintln`, `write`, `newline`, `flush`, `readline`, `readint`, `readchar`, `readall` |
-| `os` | `getenv`, `setenv`, `cwd`, `chdir`, `pid`, `ppid`, `args_count`, `arg`, `exit`, `sep`, `is_windows`, `hostname`, `temp_dir`, `username`, `arch` |
-| `time` | `now`, `now_ms`, `year`, `month`, `day`, `hour`, `minute`, `second`, `weekday`, `yearday`, `sleep_ms` |
+| `os` | `getenv`, `setenv`, `cwd`, `chdir`, `pid`, `ppid`, `args_count`, `arg`, `exit`, `sep`, `is_windows`, `hostname`, `temp_dir`, `username`, `arch`, `home_dir`, `is_admin`, `page_size`, `uname` |
+| `time` | `now`, `now_ms`, `year`, `month`, `day`, `hour`, `minute`, `second`, `weekday`, `yearday`, `sleep_ms`, `unix_f`, `now_str`, `utc_offset` |
 | `file` | `exists`, `read`, `write`, `append`, `remove`, `rename`, `size` |
 | `fs` | `is_dir`, `is_file`, `mkdir`, `rmdir`, `list`, `join`, `abs` |
 | `random` | `seed`, `int`, `float` |
-| `process` | `system`, `exit`, `args_count`, `arg`, `getenv`, `args` |
+| `process` | `system`, `exit`, `args_count`, `arg`, `getenv`, `args`, `exec`, `which` |
 | `win` | `msgbox`, `beep`, `tick_ms`, `console_title`, `last_error`, `sleep_ms` |
 
 Note: the bitwise helpers `and` / `or` / `xor` / `not` / `shl` / `shr` are now

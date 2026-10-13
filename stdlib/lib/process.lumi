@@ -3,6 +3,8 @@ module process
 fn arg(i: i32) string
 fn args() string
 fn args_count() i32
+fn exec(cmd: string) string
 fn exit(code: i32) i32
 fn getenv(name: string) string
 fn system(cmd: string) i32
+fn which(prog: string) string

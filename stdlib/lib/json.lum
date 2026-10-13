@@ -1,0 +1,117 @@
+use sys::json_escape as _escape
+use sys::json_unescape as _unescape
+use sys::json_quote as _quote
+use sys::json_valid as _valid
+use sys::json_type as _type
+use sys::json_parse_f64 as _parse_f64
+use sys::json_parse_int as _parse_int
+use sys::json_parse_bool as _parse_bool
+use strconv::itoa as _itoa
+use strconv::fstr as _fstr
+
+fn escape(s: string) string {
+    back _escape(s)
+}
+
+fn unescape(s: string) string {
+    back _unescape(s)
+}
+
+fn quote(s: string) string {
+    back _quote(s)
+}
+
+fn valid(s: string) bool {
+    back _valid(s)
+}
+
+fn kind(s: string) i32 {
+    back _type(s)
+}
+
+fn parse_int(s: string) i32 {
+    back _parse_int(s)
+}
+
+fn parse_f64(s: string) f64 {
+    back _parse_f64(s)
+}
+
+fn parse_bool(s: string) i32 {
+    back _parse_bool(s)
+}
+
+fn num(v: i32) string {
+    back _itoa(v)
+}
+
+fn numf(v: f64) string {
+    back _fstr(v)
+}
+
+fn boolean(v: bool) string {
+    if v {
+        back "true"
+    }
+    back "false"
+}
+
+fn array_int(a: []i32) string {
+    let r: string = "["
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if i > 0 {
+            r = r + ","
+        }
+        r = r + _itoa(a[i])
+        i = i + 1
+    }
+    back r + "]"
+}
+
+fn array_f64(a: []f64) string {
+    let r: string = "["
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if i > 0 {
+            r = r + ","
+        }
+        r = r + _fstr(a[i])
+        i = i + 1
+    }
+    back r + "]"
+}
+
+fn array_bool(a: []bool) string {
+    let r: string = "["
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if i > 0 {
+            r = r + ","
+        }
+        if a[i] {
+            r = r + "true"
+        } else {
+            r = r + "false"
+        }
+        i = i + 1
+    }
+    back r + "]"
+}
+
+fn array_string(a: []string) string {
+    let r: string = "["
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if i > 0 {
+            r = r + ","
+        }
+        r = r + _quote(a[i])
+        i = i + 1
+    }
+    back r + "]"
+}

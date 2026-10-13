@@ -6,8 +6,11 @@ fn minute() i32
 fn month() i32
 fn now() i32
 fn now_ms() i32
+fn now_str() string
 fn second() i32
 fn sleep_ms(ms: i32) i32
+fn unix_f() f64
+fn utc_offset() i32
 fn weekday() i32
 fn year() i32
 fn yearday() i32

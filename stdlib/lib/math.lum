@@ -1,4 +1,27 @@
 use io::eprintln
+use sys::sin as _sin
+use sys::cos as _cos
+use sys::tan as _tan
+use sys::asin as _asin
+use sys::acos as _acos
+use sys::atan as _atan
+use sys::atan2 as _atan2
+use sys::sqrt_f as _sqrt_f
+use sys::pow_f as _pow_f
+use sys::fabs as _fabs
+use sys::ln as _ln
+use sys::log10 as _log10
+use sys::log2 as _log2
+use sys::exp as _exp
+use sys::floor as _floor
+use sys::ceil as _ceil
+use sys::round as _round
+use sys::trunc as _trunc
+use sys::fmod as _fmod
+use sys::hypot as _hypot
+use sys::pi as _pi
+use sys::e as _e
+use sys::tau as _tau
 
 fn abs(v: i32) i32 {
     if v < 0 {
@@ -114,4 +137,96 @@ fn absdiff(a: i32, b: i32) i32 {
         back a - b
     }
     back b - a
+}
+
+fn sin(x: f64) f64 {
+    back _sin(x)
+}
+
+fn cos(x: f64) f64 {
+    back _cos(x)
+}
+
+fn tan(x: f64) f64 {
+    back _tan(x)
+}
+
+fn asin(x: f64) f64 {
+    back _asin(x)
+}
+
+fn acos(x: f64) f64 {
+    back _acos(x)
+}
+
+fn atan(x: f64) f64 {
+    back _atan(x)
+}
+
+fn atan2(y: f64, x: f64) f64 {
+    back _atan2(y, x)
+}
+
+fn sqrt_f(x: f64) f64 {
+    back _sqrt_f(x)
+}
+
+fn pow_f(x: f64, y: f64) f64 {
+    back _pow_f(x, y)
+}
+
+fn fabs(x: f64) f64 {
+    back _fabs(x)
+}
+
+fn ln(x: f64) f64 {
+    back _ln(x)
+}
+
+fn log10(x: f64) f64 {
+    back _log10(x)
+}
+
+fn log2(x: f64) f64 {
+    back _log2(x)
+}
+
+fn exp(x: f64) f64 {
+    back _exp(x)
+}
+
+fn floor(x: f64) f64 {
+    back _floor(x)
+}
+
+fn ceil(x: f64) f64 {
+    back _ceil(x)
+}
+
+fn round(x: f64) f64 {
+    back _round(x)
+}
+
+fn trunc(x: f64) f64 {
+    back _trunc(x)
+}
+
+fn fmod(x: f64, y: f64) f64 {
+    back _fmod(x, y)
+}
+
+fn hypot(x: f64, y: f64) f64 {
+    back _hypot(x, y)
+}
+
+fn pi() f64 {
+    back _pi()
+}
+
+fn e() f64 {
+    back _e()
+}
+
+fn tau() f64 {
+    back _tau()
 }

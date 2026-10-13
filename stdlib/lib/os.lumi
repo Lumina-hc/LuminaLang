@@ -7,11 +7,15 @@ fn chdir(path: string) i32
 fn cwd() string
 fn exit(code: i32) i32
 fn getenv(name: string) string
+fn home_dir() string
 fn hostname() string
+fn is_admin() bool
 fn is_windows() bool
+fn page_size() i32
 fn pid() i32
 fn ppid() i32
 fn sep() i32
 fn setenv(name: string, value: string) i32
 fn temp_dir() string
+fn uname() string
 fn username() string

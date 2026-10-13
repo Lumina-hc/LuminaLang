@@ -9,6 +9,7 @@
 #else
 #include <unistd.h>
 #include <limits.h>
+#include <sys/utsname.h>
 #define LUM_GETCWD getcwd
 #define LUM_GETPID getpid
 #endif
@@ -124,5 +125,75 @@ int64_t lum_os_arch(void) {
     return 64;
 #else
     return 32;
+#endif
+}
+
+const char *lum_os_home_dir(void) {
+#ifdef _WIN32
+    const char *u = getenv("USERPROFILE");
+    if (!u) {
+        const char *d = getenv("HOMEDRIVE");
+        const char *p = getenv("HOMEPATH");
+        if (d && p) {
+            char buf[4096];
+            snprintf(buf, sizeof(buf), "%s%s", d, p);
+            return lum_dup(buf);
+        }
+    }
+    return lum_dup(u ? u : "");
+#else
+    const char *u = getenv("HOME");
+    return lum_dup(u ? u : "");
+#endif
+}
+
+int lum_os_is_admin(void) {
+#ifdef _WIN32
+    BOOL admin = FALSE;
+    PSID grp = NULL;
+    SID_IDENTIFIER_AUTHORITY auth = SECURITY_NT_AUTHORITY;
+    if (AllocateAndInitializeSid(&auth, 2, SECURITY_BUILTIN_DOMAIN_RID,
+                                 DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &grp)) {
+        CheckTokenMembership(NULL, grp, &admin);
+        FreeSid(grp);
+    }
+    return admin ? 1 : 0;
+#else
+    return geteuid() == 0 ? 1 : 0;
+#endif
+}
+
+int64_t lum_os_page_size(void) {
+#ifdef _WIN32
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    return (int64_t)si.dwPageSize;
+#else
+    long ps = sysconf(_SC_PAGESIZE);
+    return ps > 0 ? (int64_t)ps : 4096;
+#endif
+}
+
+const char *lum_os_uname(void) {
+#ifdef _WIN32
+    OSVERSIONINFOA vi;
+    vi.dwOSVersionInfoSize = sizeof(vi);
+    if (GetVersionExA(&vi)) {
+        char buf[128];
+        snprintf(buf, sizeof(buf), "Windows %lu.%lu.%lu",
+                 (unsigned long)vi.dwMajorVersion,
+                 (unsigned long)vi.dwMinorVersion,
+                 (unsigned long)vi.dwBuildNumber);
+        return lum_dup(buf);
+    }
+    return lum_dup("Windows");
+#else
+    struct utsname u;
+    if (uname(&u) == 0) {
+        char buf[512];
+        snprintf(buf, sizeof(buf), "%s %s", u.sysname, u.release);
+        return lum_dup(buf);
+    }
+    return lum_dup("");
 #endif
 }

@@ -1,5 +1,9 @@
 use sys::ord as _ord
 use sys::chr as _chr
+use sys::byte_len as _byte_len
+use sys::slice as _slice
+use sys::parse_f64 as _parse_f64
+use sys::format_f64 as _format_f64
 
 fn itoa(n: i32) string {
     if n == 0 {
@@ -118,4 +122,68 @@ fn boolstr(n: i32) string {
         back "true"
     }
     back "false"
+}
+
+fn atof(s: string) f64 {
+    back _parse_f64(s)
+}
+
+fn ftoa(v: f64, prec: i32) string {
+    back _format_f64(v, prec)
+}
+
+fn fstr(v: f64) string {
+    back _format_f64(v, 6)
+}
+
+fn from_base(s: string, base: i32) i32 {
+    let v: i32 = 0
+    let neg: bool = false
+    let first: bool = true
+    for c in s {
+        let o: i32 = _ord(c)
+        if first {
+            first = false
+            if o == 45 {
+                neg = true
+                skip
+            }
+            if o == 43 {
+                skip
+            }
+        }
+        let d: i32 = 0 - 1
+        if o >= 48 and o <= 57 {
+            d = o - 48
+        } else {
+            if o >= 97 and o <= 122 {
+                d = o - 87
+            } else {
+                if o >= 65 and o <= 90 {
+                    d = o - 55
+                }
+            }
+        }
+        if d >= 0 and d < base {
+            v = v * base + d
+        } else {
+            halt
+        }
+    }
+    if neg {
+        back 0 - v
+    }
+    back v
+}
+
+fn parse_hex(s: string) i32 {
+    let t: string = s
+    let n: i32 = _byte_len(t)
+    if n >= 2 {
+        let p: string = _slice(t, 0, 2)
+        if p == "0x" or p == "0X" {
+            t = _slice(t, 2, n)
+        }
+    }
+    back from_base(t, 16)
 }

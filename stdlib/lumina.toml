@@ -6,6 +6,6 @@ license = "Apache-2.0"
 authors = ["LuminaStudio"]
 
 [lib]
-modules = ["bits", "file", "fs", "io", "math", "os", "process", "random", "strconv", "strings", "time", "win"]
+modules = ["bits", "collections", "encoding", "file", "fs", "io", "json", "math", "os", "process", "random", "strconv", "strings", "time", "win"]
 
 [dependencies]

@@ -1,0 +1,100 @@
+use collections::range
+use collections::sum
+use collections::sort
+use collections::unique
+use collections::reverse
+use collections::min
+use collections::max
+use collections::index_of
+use collections::contains
+use collections::join
+use math::sqrt_f
+use math::pow_f
+use strings::split
+use strings::split_lines
+use strings::trim_left
+use strings::trim_right
+use strings::count
+use strings::pad_left
+use strings::pad_right
+use strconv::from_base
+use strconv::parse_hex
+use strconv::atof
+use strconv::ftoa
+use encoding::md5
+use encoding::sha256
+use encoding::crc32
+use encoding::base64_encode
+use encoding::base64_decode
+use json::quote
+use json::valid
+use json::kind
+use json::array_int
+use json::array_string
+use json::parse_int
+
+fn main() i32 {
+    let a: []i32 = range(0, 5, 1)
+    out sum(a)
+    out min(a)
+    out max(a)
+    out index_of(a, 3)
+    out contains(a, 9)
+
+    let s: []string = ["a", "b", "c"]
+    out join(s, "-")
+
+    let r: []i32 = reverse([1, 2, 3])
+    out r[0]
+    out r[2]
+
+    let sorted: []i32 = sort([3, 1, 2])
+    out sorted[0]
+    out sorted[1]
+    out sorted[2]
+
+    let uniq: []i32 = unique([5, 5, 4, 4, 4])
+    out len(uniq)
+    out uniq[0]
+    out uniq[1]
+
+    out sqrt_f(9.0)
+    out pow_f(2.0, 10.0)
+
+    out trim_left("   hi")
+    out trim_right("hi   ")
+    out count("banana", "an")
+    out pad_left("7", 3, "0")
+    out pad_right("7", 3, ".")
+
+    let parts: []string = split("a,b,c", ",")
+    out len(parts)
+    out parts[1]
+
+    let lines: []string = split_lines("x\ny\n")
+    out len(lines)
+    out lines[0]
+    out lines[1]
+
+    out from_base("ff", 16)
+    out parse_hex("0x10")
+    out ftoa(3.14159, 2)
+    out atof("2.5")
+
+    out md5("abc")
+    out sha256("abc")
+    out crc32("abc")
+    out base64_encode("hello")
+    out base64_decode("aGVsbG8=")
+
+    out quote("a\"b")
+    out valid("[1,2,3]")
+    out valid("[1,2,")
+    out kind("{}")
+    out kind("3.5")
+    out array_int([1, 2, 3])
+    out array_string(["a", "b"])
+    out parse_int("42")
+
+    back 0
+}

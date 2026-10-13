@@ -1,0 +1,30 @@
+use sys::md5 as _md5
+use sys::sha1 as _sha1
+use sys::sha256 as _sha256
+use sys::crc32 as _crc32
+use sys::base64_encode as _base64_encode
+use sys::base64_decode as _base64_decode
+
+fn md5(s: string) string {
+    back _md5(s)
+}
+
+fn sha1(s: string) string {
+    back _sha1(s)
+}
+
+fn sha256(s: string) string {
+    back _sha256(s)
+}
+
+fn crc32(s: string) i32 {
+    back _crc32(s)
+}
+
+fn base64_encode(s: string) string {
+    back _base64_encode(s)
+}
+
+fn base64_decode(s: string) string {
+    back _base64_decode(s)
+}

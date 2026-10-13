@@ -1,0 +1,298 @@
+use sys::str_cmp as _str_cmp
+
+fn zeros(n: i32) []i32 {
+    let r: []i32 = []
+    let i: i32 = 0
+    while i < n {
+        r = push(r, 0)
+        i = i + 1
+    }
+    back r
+}
+
+fn filled(n: i32, v: i32) []i32 {
+    let r: []i32 = []
+    let i: i32 = 0
+    while i < n {
+        r = push(r, v)
+        i = i + 1
+    }
+    back r
+}
+
+fn sum(a: []i32) i32 {
+    let r: i32 = 0
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        r = r + a[i]
+        i = i + 1
+    }
+    back r
+}
+
+fn product(a: []i32) i32 {
+    let r: i32 = 1
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        r = r * a[i]
+        i = i + 1
+    }
+    back r
+}
+
+fn min(a: []i32) i32 {
+    if len(a) == 0 {
+        back 0
+    }
+    let r: i32 = a[0]
+    let i: i32 = 1
+    let n: i32 = len(a)
+    while i < n {
+        if a[i] < r {
+            r = a[i]
+        }
+        i = i + 1
+    }
+    back r
+}
+
+fn max(a: []i32) i32 {
+    if len(a) == 0 {
+        back 0
+    }
+    let r: i32 = a[0]
+    let i: i32 = 1
+    let n: i32 = len(a)
+    while i < n {
+        if a[i] > r {
+            r = a[i]
+        }
+        i = i + 1
+    }
+    back r
+}
+
+fn index_of(a: []i32, v: i32) i32 {
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if a[i] == v {
+            back i
+        }
+        i = i + 1
+    }
+    back 0 - 1
+}
+
+fn contains(a: []i32, v: i32) bool {
+    back index_of(a, v) >= 0
+}
+
+fn count(a: []i32, v: i32) i32 {
+    let c: i32 = 0
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if a[i] == v {
+            c = c + 1
+        }
+        i = i + 1
+    }
+    back c
+}
+
+fn reverse(a: []i32) []i32 {
+    let r: []i32 = []
+    let i: i32 = len(a) - 1
+    while i >= 0 {
+        r = push(r, a[i])
+        i = i - 1
+    }
+    back r
+}
+
+fn sort(a: []i32) []i32 {
+    let r: []i32 = []
+    let n: i32 = len(a)
+    let i: i32 = 0
+    while i < n {
+        r = push(r, a[i])
+        i = i + 1
+    }
+    let k: i32 = 1
+    while k < n {
+        let key: i32 = r[k]
+        let j: i32 = k - 1
+        let done: bool = false
+        while j >= 0 and not done {
+            if r[j] > key {
+                r[j + 1] = r[j]
+                j = j - 1
+            } else {
+                done = true
+            }
+        }
+        r[j + 1] = key
+        k = k + 1
+    }
+    back r
+}
+
+fn unique(a: []i32) []i32 {
+    let r: []i32 = []
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if not contains(r, a[i]) {
+            r = push(r, a[i])
+        }
+        i = i + 1
+    }
+    back r
+}
+
+fn range(start: i32, end: i32, step: i32) []i32 {
+    let r: []i32 = []
+    if step == 0 {
+        back r
+    }
+    let i: i32 = start
+    if step > 0 {
+        while i < end {
+            r = push(r, i)
+            i = i + step
+        }
+    } else {
+        while i > end {
+            r = push(r, i)
+            i = i + step
+        }
+    }
+    back r
+}
+
+fn sum_f(a: []f64) f64 {
+    let r: f64 = 0.0
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        r = r + a[i]
+        i = i + 1
+    }
+    back r
+}
+
+fn min_f(a: []f64) f64 {
+    if len(a) == 0 {
+        back 0.0
+    }
+    let r: f64 = a[0]
+    let i: i32 = 1
+    let n: i32 = len(a)
+    while i < n {
+        if a[i] < r {
+            r = a[i]
+        }
+        i = i + 1
+    }
+    back r
+}
+
+fn max_f(a: []f64) f64 {
+    if len(a) == 0 {
+        back 0.0
+    }
+    let r: f64 = a[0]
+    let i: i32 = 1
+    let n: i32 = len(a)
+    while i < n {
+        if a[i] > r {
+            r = a[i]
+        }
+        i = i + 1
+    }
+    back r
+}
+
+fn avg_f(a: []f64) f64 {
+    let n: i32 = len(a)
+    if n == 0 {
+        back 0.0
+    }
+    let c: f64 = 0.0
+    let i: i32 = 0
+    while i < n {
+        c = c + 1.0
+        i = i + 1
+    }
+    back sum_f(a) / c
+}
+
+fn index_of_s(a: []string, v: string) i32 {
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if a[i] == v {
+            back i
+        }
+        i = i + 1
+    }
+    back 0 - 1
+}
+
+fn contains_s(a: []string, v: string) bool {
+    back index_of_s(a, v) >= 0
+}
+
+fn reverse_s(a: []string) []string {
+    let r: []string = []
+    let i: i32 = len(a) - 1
+    while i >= 0 {
+        r = push(r, a[i])
+        i = i - 1
+    }
+    back r
+}
+
+fn sort_s(a: []string) []string {
+    let r: []string = []
+    let n: i32 = len(a)
+    let i: i32 = 0
+    while i < n {
+        r = push(r, a[i])
+        i = i + 1
+    }
+    let k: i32 = 1
+    while k < n {
+        let key: string = r[k]
+        let j: i32 = k - 1
+        let done: bool = false
+        while j >= 0 and not done {
+            if _str_cmp(r[j], key) > 0 {
+                r[j + 1] = r[j]
+                j = j - 1
+            } else {
+                done = true
+            }
+        }
+        r[j + 1] = key
+        k = k + 1
+    }
+    back r
+}
+
+fn join(a: []string, sep: string) string {
+    let r: string = ""
+    let i: i32 = 0
+    let n: i32 = len(a)
+    while i < n {
+        if i > 0 {
+            r = r + sep
+        }
+        r = r + a[i]
+        i = i + 1
+    }
+    back r
+}

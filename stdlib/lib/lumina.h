@@ -35,4 +35,68 @@ void *lum_slice_push_f64(void *s, double v);
 void *lum_slice_push_bool(void *s, int64_t v);
 void *lum_slice_push_str(void *s, const char *v);
 
+int lum_str_cmp(const char *a, const char *b);
+
+/* math (f64) */
+double lum_math_sin(double x);
+double lum_math_cos(double x);
+double lum_math_tan(double x);
+double lum_math_asin(double x);
+double lum_math_acos(double x);
+double lum_math_atan(double x);
+double lum_math_atan2(double y, double x);
+double lum_math_sqrt(double x);
+double lum_math_pow(double x, double y);
+double lum_math_fabs(double x);
+double lum_math_ln(double x);
+double lum_math_log10(double x);
+double lum_math_log2(double x);
+double lum_math_exp(double x);
+double lum_math_floor(double x);
+double lum_math_ceil(double x);
+double lum_math_round(double x);
+double lum_math_trunc(double x);
+double lum_math_fmod(double x, double y);
+double lum_math_hypot(double x, double y);
+double lum_math_pi(void);
+double lum_math_e(void);
+double lum_math_tau(void);
+
+/* time */
+double lum_time_unix_f(void);
+const char *lum_time_now_str(void);
+int64_t lum_time_utc_offset(void);
+
+/* os */
+const char *lum_os_home_dir(void);
+int lum_os_is_admin(void);
+int64_t lum_os_page_size(void);
+const char *lum_os_uname(void);
+
+/* process */
+const char *lum_proc_exec(const char *cmd);
+const char *lum_proc_which(const char *prog);
+
+/* strconv */
+double lum_str_parse_f64(const char *s);
+const char *lum_str_format_f64(double v, int64_t prec);
+
+/* encoding */
+const char *lum_enc_md5(const char *s);
+const char *lum_enc_sha1(const char *s);
+const char *lum_enc_sha256(const char *s);
+int64_t lum_enc_crc32(const char *s);
+const char *lum_enc_base64_encode(const char *s);
+const char *lum_enc_base64_decode(const char *s);
+
+/* json */
+const char *lum_json_escape(const char *s);
+const char *lum_json_unescape(const char *s);
+const char *lum_json_quote(const char *s);
+double lum_json_parse_f64(const char *s);
+int64_t lum_json_parse_int(const char *s);
+int64_t lum_json_parse_bool(const char *s);
+int lum_json_valid(const char *s);
+int64_t lum_json_type(const char *s);
+
 #endif

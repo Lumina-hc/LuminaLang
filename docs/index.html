@@ -130,7 +130,7 @@
             </div>
             <div class="feature">
                 <h3 data-en="Standard Library" data-zh="标准库">Standard Library</h3>
-                <p data-en="Twelve modules written in LuminaLang itself, from math and strings to os, time, fs and random." data-zh="12 个用 LuminaLang 自身编写的模块，涵盖 math、strings 到 os、time、fs、random。">Twelve modules written in LuminaLang itself, from math and strings to os, time, fs and random.</p>
+                <p data-en="Fifteen modules written in LuminaLang itself, from math, strings and collections to encoding, json, os, time and fs." data-zh="15 个用 LuminaLang 自身编写的模块，涵盖 math、strings、collections 到 encoding、json、os、time、fs。">Fifteen modules written in LuminaLang itself, from math, strings and collections to encoding, json, os, time and fs.</p>
             </div>
             <div class="feature">
                 <h3 data-en="Package Manager" data-zh="包管理器">Package Manager</h3>
@@ -164,17 +164,20 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td><code>math</code></td><td>abs, max, min, pow, sqrt, gcd, lcm, mod, clamp, sign, absdiff</td></tr>
+                <tr><td><code>math</code></td><td>abs, max, min, pow, sqrt, gcd, lcm, mod, clamp, sign, absdiff; f64: sin, cos, tan, asin, acos, atan, atan2, sqrt_f, pow_f, fabs, ln, log10, log2, exp, floor, ceil, round, trunc, fmod, hypot, pi, e, tau</td></tr>
                 <tr><td><code>bits</code></td><td>bit, setbit, clrbit, toggle, popcount, parity</td></tr>
-                <tr><td><code>strings</code></td><td>len, char_at, upper, lower, trim, index, contains, startswith, endswith, repeat, substr, replace, reverse</td></tr>
-                <tr><td><code>strconv</code></td><td>itoa, atoi, hex, bin, boolstr</td></tr>
+                <tr><td><code>strings</code></td><td>len, char_at, upper, lower, trim, trim_left, trim_right, index, contains, startswith, endswith, repeat, substr, replace, reverse, count, split, split_lines, pad_left, pad_right</td></tr>
+                <tr><td><code>strconv</code></td><td>itoa, atoi, atof, ftoa, fstr, hex, bin, from_base, parse_hex, boolstr</td></tr>
+                <tr><td><code>collections</code></td><td>zeros, filled, sum, product, min, max, index_of, contains, count, reverse, sort, unique, range, sum_f, min_f, max_f, avg_f, index_of_s, contains_s, reverse_s, sort_s, join</td></tr>
+                <tr><td><code>encoding</code></td><td>md5, sha1, sha256, crc32, base64_encode, base64_decode</td></tr>
+                <tr><td><code>json</code></td><td>escape, unescape, quote, valid, kind, parse_int, parse_f64, parse_bool, num, numf, boolean, array_int, array_f64, array_bool, array_string</td></tr>
                 <tr><td><code>io</code></td><td>print, println, eprint, eprintln, write, readline, readint, readall</td></tr>
-                <tr><td><code>os</code></td><td>getenv, setenv, cwd, chdir, pid, ppid, args_count, arg, exit, sep, is_windows, hostname</td></tr>
-                <tr><td><code>time</code></td><td>now, now_ms, year, month, day, hour, minute, second, weekday, sleep_ms</td></tr>
+                <tr><td><code>os</code></td><td>getenv, setenv, cwd, chdir, pid, ppid, args_count, arg, exit, sep, is_windows, hostname, home_dir, is_admin, page_size, uname</td></tr>
+                <tr><td><code>time</code></td><td>now, now_ms, year, month, day, hour, minute, second, weekday, sleep_ms, unix_f, now_str, utc_offset</td></tr>
                 <tr><td><code>file</code></td><td>exists, read, write, append, remove, rename, size</td></tr>
                 <tr><td><code>fs</code></td><td>is_dir, is_file, mkdir, rmdir, list, join, abs</td></tr>
                 <tr><td><code>random</code></td><td>seed, int, float</td></tr>
-                <tr><td><code>process</code></td><td>system, exit, args_count, arg, getenv, args</td></tr>
+                <tr><td><code>process</code></td><td>system, exit, args_count, arg, getenv, args, exec, which</td></tr>
                 <tr><td><code>win</code></td><td>msgbox, beep, tick_ms, console_title, last_error, sleep_ms</td></tr>
             </tbody>
         </table>

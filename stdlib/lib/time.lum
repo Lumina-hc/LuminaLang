@@ -9,6 +9,9 @@ use sys::second as _second
 use sys::weekday as _weekday
 use sys::yearday as _yearday
 use sys::sleep_ms as _sleep_ms
+use sys::unix_f as _unix_f
+use sys::now_str as _now_str
+use sys::utc_offset as _utc_offset
 
 fn now() i32 {
     back _now()
@@ -52,4 +55,16 @@ fn yearday() i32 {
 
 fn sleep_ms(ms: i32) i32 {
     back _sleep_ms(ms)
+}
+
+fn unix_f() f64 {
+    back _unix_f()
+}
+
+fn now_str() string {
+    back _now_str()
+}
+
+fn utc_offset() i32 {
+    back _utc_offset()
 }
