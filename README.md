@@ -503,7 +503,7 @@ LuminaLang/
 │       ├── *.lumi       Declaration-only signatures
 │       ├── runtime.c    Entry point and core primitives
 │       └── *.c          sys C layer (io, os, time, file, fs, random,
-│                        process, win)
+│                        process, win, math, encoding, json)
 ├── tests/               Golden tests and expected outputs
 ├── examples/            Example programs and regression tests
 ├── LICENSE              Apache License 2.0
