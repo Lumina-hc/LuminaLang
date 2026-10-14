@@ -37,7 +37,6 @@ void *lum_slice_push_str(void *s, const char *v);
 
 int lum_str_cmp(const char *a, const char *b);
 
-/* math (f64) */
 double lum_math_sin(double x);
 double lum_math_cos(double x);
 double lum_math_tan(double x);
@@ -62,26 +61,21 @@ double lum_math_pi(void);
 double lum_math_e(void);
 double lum_math_tau(void);
 
-/* time */
 double lum_time_unix_f(void);
 const char *lum_time_now_str(void);
 int64_t lum_time_utc_offset(void);
 
-/* os */
 const char *lum_os_home_dir(void);
 int lum_os_is_admin(void);
 int64_t lum_os_page_size(void);
 const char *lum_os_uname(void);
 
-/* process */
 const char *lum_proc_exec(const char *cmd);
 const char *lum_proc_which(const char *prog);
 
-/* strconv */
 double lum_str_parse_f64(const char *s);
 const char *lum_str_format_f64(double v, int64_t prec);
 
-/* encoding */
 const char *lum_enc_md5(const char *s);
 const char *lum_enc_sha1(const char *s);
 const char *lum_enc_sha256(const char *s);
@@ -89,7 +83,6 @@ int64_t lum_enc_crc32(const char *s);
 const char *lum_enc_base64_encode(const char *s);
 const char *lum_enc_base64_decode(const char *s);
 
-/* json */
 const char *lum_json_escape(const char *s);
 const char *lum_json_unescape(const char *s);
 const char *lum_json_quote(const char *s);

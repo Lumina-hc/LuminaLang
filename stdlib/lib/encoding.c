@@ -1,7 +1,5 @@
 #include "lumina.h"
 
-/* ---- shared helpers ---- */
-
 static uint32_t lum_rotl32(uint32_t x, int c) { return (x << c) | (x >> (32 - c)); }
 static uint32_t lum_rotr32(uint32_t x, int c) { return (x >> c) | (x << (32 - c)); }
 
@@ -15,8 +13,6 @@ static const char *lum_hex(const uint8_t *d, size_t n) {
     r[n * 2] = 0;
     return r;
 }
-
-/* ---- MD5 (RFC 1321) ---- */
 
 static void lum_md5_block(uint32_t state[4], const uint8_t block[64]) {
     static const uint32_t K[64] = {
@@ -85,8 +81,6 @@ const char *lum_enc_md5(const char *s) {
     return lum_hex(dig, 16);
 }
 
-/* ---- SHA-1 (RFC 3174) ---- */
-
 static void lum_sha1_block(uint32_t h[5], const uint8_t block[64]) {
     uint32_t w[80];
     for (int i = 0; i < 16; i++)
@@ -132,8 +126,6 @@ const char *lum_enc_sha1(const char *s) {
             dig[j * 4 + k] = (uint8_t)(h[j] >> (24 - 8 * k));
     return lum_hex(dig, 20);
 }
-
-/* ---- SHA-256 (FIPS 180-4) ---- */
 
 static const uint32_t lum_sha256_K[64] = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
@@ -203,8 +195,6 @@ const char *lum_enc_sha256(const char *s) {
     return lum_hex(dig, 32);
 }
 
-/* ---- CRC-32 (IEEE 802.3) ---- */
-
 int64_t lum_enc_crc32(const char *s) {
     const unsigned char *p = (const unsigned char *)(s ? s : "");
     uint32_t crc = 0xFFFFFFFFu;
@@ -215,8 +205,6 @@ int64_t lum_enc_crc32(const char *s) {
     }
     return (int64_t)(crc ^ 0xFFFFFFFFu);
 }
-
-/* ---- Base64 ---- */
 
 static const char lum_b64_alpha[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
