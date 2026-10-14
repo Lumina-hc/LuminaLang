@@ -18,8 +18,7 @@ against a tiny C runtime, so a "hello world" is roughly 100 KB instead of the
 - Modules: the standard library plus user modules in sibling `.lum` files
 - A standard library written in LuminaLang itself (`math`, `bits`, `strings`,
   `strconv`, `collections`, `encoding`, `json`, `os`, `time`, `file`, `fs`,
-  `random`, `process`, `io`, `win`)
-  on top of a thin `sys` C layer
+  `random`, `process`, `io`, `win`) on top of a thin `sys` C layer
 - A decentralised package manager (`pho`) with a manifest, lockfile and
   precompiled `.lumc` libraries
 - Diagnostics with `line:column` positions
