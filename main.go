@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const version = "1.2.0"
+const version = "1.0.0"
 
 func usage() {
 	fmt.Printf("LuminaLang v%s (LLVM backend)\n", version)
