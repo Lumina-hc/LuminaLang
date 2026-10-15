@@ -1,4 +1,4 @@
-# LuminaLang v1.0.0 (LLVM backend)
+# LuminaLang v1.0.0
 
 A small strongly-typed compiled language. LuminaLang source (`.lum`) is
 translated to LLVM IR and compiled to a native executable with `clang` — there
