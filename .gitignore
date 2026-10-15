@@ -1,2 +1,5 @@
 website/
 *.exe
+installer/bin/
+installer/obj/
+installer/payload/
